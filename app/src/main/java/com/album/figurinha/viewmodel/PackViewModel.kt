@@ -1,4 +1,4 @@
-package com.album.figurinha.ui.viewmodel
+package com.album.figurinha.viewmodel
 
 import android.util.Log
 import androidx.lifecycle.ViewModel

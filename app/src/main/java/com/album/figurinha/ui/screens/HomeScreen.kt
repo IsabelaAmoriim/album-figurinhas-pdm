@@ -32,6 +32,8 @@ import com.album.figurinha.util.StickerImageResolver
 @Composable
 fun HomeScreen(
     balance: Int, 
+    recompensasDisponiveis: Boolean = false,
+    onClaimReward: () -> Unit = {},
     networkStatus: ConnectivityObserver.Status,
     onSelectionClick: (Int) -> Unit, 
     onStoreClick: () -> Unit
@@ -71,7 +73,47 @@ fun HomeScreen(
             CoinWallet(balance = balance)
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(16.dp))
+
+        if (recompensasDisponiveis) {
+            Surface(
+                color = CardBackground,
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth(),
+                border = androidx.compose.foundation.BorderStroke(1.dp, WorldCupGold)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .padding(12.dp)
+                        .fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Star,
+                            contentDescription = null,
+                            tint = WorldCupYellow,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Column {
+                            Text(text = "Recompensa Diária", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            Text(text = "+50 moedas grátis!", color = Color.Gray, fontSize = 12.sp)
+                        }
+                    }
+                    Button(
+                        onClick = onClaimReward,
+                        colors = ButtonDefaults.buttonColors(containerColor = WorldCupYellow),
+                        shape = RoundedCornerShape(8.dp),
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
+                    ) {
+                        Text(text = "RESGATAR", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+        }
 
         // Progress Bar Global
         Surface(

@@ -24,8 +24,8 @@ import com.album.figurinha.ui.components.StickerCard
 import com.album.figurinha.ui.theme.DarkBlueBg
 import com.album.figurinha.ui.theme.WorldCupGold
 import com.album.figurinha.ui.theme.WorldCupYellow
-import com.album.figurinha.ui.viewmodel.PackViewModel
-import com.album.figurinha.ui.viewmodel.WalletViewModel
+import com.album.figurinha.viewmodel.PackViewModel
+import com.album.figurinha.viewmodel.WalletViewModel
 
 @Composable
 fun StoreScreen(

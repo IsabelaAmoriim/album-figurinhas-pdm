@@ -25,8 +25,8 @@ import com.album.figurinha.api.ApiClient
 import com.album.figurinha.ui.navigation.Routes
 import com.album.figurinha.ui.screens.*
 import com.album.figurinha.ui.theme.FigurinhaTheme
-import com.album.figurinha.ui.viewmodel.PackViewModel
-import com.album.figurinha.ui.viewmodel.WalletViewModel
+import com.album.figurinha.viewmodel.PackViewModel
+import com.album.figurinha.viewmodel.WalletViewModel
 import com.album.figurinha.util.ConnectivityObserver
 import com.album.figurinha.util.NetworkConnectivityObserver
 
@@ -86,6 +86,8 @@ fun MainNavigation(networkStatus: ConnectivityObserver.Status) {
             composable(Routes.Home.route) {
                 HomeScreen(
                     balance = walletState.moedas,
+                    recompensasDisponiveis = walletState.recompensasDisponiveis,
+                    onClaimReward = { walletViewModel.claimDailyReward() },
                     networkStatus = networkStatus,
                     onSelectionClick = { teamId ->
                         navController.navigate(Routes.SelectionDetail.createRoute(teamId))
