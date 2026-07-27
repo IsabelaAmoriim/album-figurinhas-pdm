@@ -1,7 +1,5 @@
 package com.album.figurinha.util
 
-import android.util.Log
-
 object StickerImageResolver {
     
     // Mapping API-Sports IDs to SoFIFA IDs (EA Sports FC 24)
@@ -36,7 +34,7 @@ object StickerImageResolver {
             val paddedId = soFifaId.padStart(6, '0')
             // High quality headshot (120x120 is the standard high-res version on SoFifa)
             val url = "https://cdn.sofifa.net/players/${paddedId.take(3)}/${paddedId.takeLast(3)}/24_120.png"
-            Log.d("ImageResolver", "Resolving Player $playerId to SoFifa: $url")
+            println("ImageResolver: Resolving Player $playerId to SoFifa: $url")
             url
         } else {
             originalUrl
@@ -48,7 +46,7 @@ object StickerImageResolver {
         return if (soFifaTeamId != null) {
             // High-resolution 120px Shield
             val url = "https://cdn.sofifa.net/teams/$soFifaTeamId/120.png"
-            Log.d("ImageResolver", "Resolving Team $teamId to High-Res Shield: $url")
+            println("ImageResolver: Resolving Team $teamId to High-Res Shield: $url")
             url
         } else {
             originalUrl
