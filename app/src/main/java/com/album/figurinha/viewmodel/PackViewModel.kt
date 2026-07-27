@@ -5,7 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.album.figurinha.model.Figurinha
 import com.album.figurinha.model.PacoteFigurinha
 import com.album.figurinha.model.Player
+import com.album.figurinha.model.StickerRarity
 import com.album.figurinha.repository.FootballRepository
+import com.album.figurinha.repository.PlayersData
 import com.album.figurinha.util.StickerImageResolver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,9 +16,14 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 
+data class DrawnSticker(
+    val player: Player,
+    val rarity: StickerRarity
+)
+
 class PackViewModel(private val repository: FootballRepository = FootballRepository()) : ViewModel() {
-    private val _newStickers = MutableStateFlow<List<Player>>(emptyList())
-    val newStickers: StateFlow<List<Player>> = _newStickers.asStateFlow()
+    private val _newStickers = MutableStateFlow<List<DrawnSticker>>(emptyList())
+    val newStickers: StateFlow<List<DrawnSticker>> = _newStickers.asStateFlow()
 
     private val _currentPack = MutableStateFlow<PacoteFigurinha?>(null)
     val currentPack: StateFlow<PacoteFigurinha?> = _currentPack.asStateFlow()
@@ -27,22 +34,11 @@ class PackViewModel(private val repository: FootballRepository = FootballReposit
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
 
-    // Fallback data with pre-resolved URLs (SoFifa)
-    private val fallbackPlayers = listOf(
-        Player(614, "Neymar Jr", "", 10, "ATACANTE", "...", 1),
-        Player(732, "Vinícius Jr", "", 7, "ATACANTE", "...", 1),
-        Player(154, "Lionel Messi", "", 10, "ATACANTE", "...", 2),
-        Player(276, "K. Mbappé", "", 10, "ATACANTE", "...", 3),
-        Player(874, "C. Ronaldo", "", 7, "ATACANTE", "...", 4)
-    ).map { 
-        it.copy(photo = StickerImageResolver.getPlayerImageUrl(it.id, "")) 
-    }
-
     fun canAffordPack(walletViewModel: WalletViewModel): Boolean {
         return walletViewModel.wallet.value.moedas >= PACK_PRICE
     }
 
-    fun openPack(walletViewModel: WalletViewModel): Boolean {
+    fun openPack(walletViewModel: WalletViewModel, albumViewModel: AlbumViewModel? = null): Boolean {
         // 1. Verificação de saldo
         if (!canAffordPack(walletViewModel)) {
             _errorMessage.value = "Saldo insuficiente para comprar pacote! Requer $PACK_PRICE moedas."
@@ -66,54 +62,71 @@ class PackViewModel(private val repository: FootballRepository = FootballReposit
                         val teamPlayers = repository.getPlayers(randomTeam.id).response.map { it.player }
                         if (teamPlayers.isNotEmpty()) {
                             val p = teamPlayers.random()
-                            // Resolve URL immediately
-                            players.add(p.copy(photo = StickerImageResolver.getPlayerImageUrl(p.id, p.photo)))
+                            val rarity = PlayersData.getRarityForPlayer(p.id)
+                            players.add(p.copy(
+                                photo = StickerImageResolver.getPlayerImageUrl(p.id, p.photo),
+                                rarity = rarity
+                            ))
                         }
                     }
                     
                     if (players.size < 5) {
-                         players.addAll(fallbackPlayers.take(5 - players.size))
+                        val fallback = PlayersData.allPlayers
+                        players.addAll(fallback.take(5 - players.size))
                     }
                     
-                    val finalPlayers = players.shuffled()
+                    val drawn = players.shuffled().map { p ->
+                        val rarity = PlayersData.getRarityForPlayer(p.id)
+                        val updatedPlayer = p.copy(rarity = rarity)
+                        DrawnSticker(updatedPlayer, rarity)
+                    }
 
-                    // 3. Pacote adicionado para abertura
                     val pacote = PacoteFigurinha(
                         id = (1..100000).random(),
                         openDate = LocalDateTime.now(),
-                        stickers = finalPlayers.map { p ->
+                        stickers = drawn.map { d ->
                             Figurinha(
-                                id = p.id,
-                                name = p.name,
-                                image = p.photo,
-                                rarity = 1,
-                                playerId = p.id,
-                                teamId = p.teamId
+                                id = d.player.id,
+                                name = d.player.name,
+                                image = d.player.photo,
+                                rarity = d.rarity.ordinal,
+                                playerId = d.player.id,
+                                teamId = d.player.teamId
                             )
                         }
                     )
                     
                     _currentPack.value = pacote
-                    _newStickers.value = finalPlayers
+                    _newStickers.value = drawn
+
+                    // Adiciona automaticamente as figurinhas sorteadas ao álbum do usuário
+                    albumViewModel?.addStickers(drawn.map { Pair(it.player.id, it.rarity) })
+
                 } catch (e: Exception) {
                     println("PackViewModel: API Error: ${e.message}. Using fallback data.")
-                    val finalPlayers = fallbackPlayers.shuffled()
+                    val fallback = PlayersData.allPlayers
+                    val drawn = fallback.shuffled().map { p ->
+                        DrawnSticker(p, p.rarity)
+                    }
                     val pacote = PacoteFigurinha(
                         id = (1..100000).random(),
                         openDate = LocalDateTime.now(),
-                        stickers = finalPlayers.map { p ->
+                        stickers = drawn.map { d ->
                             Figurinha(
-                                id = p.id,
-                                name = p.name,
-                                image = p.photo,
-                                rarity = 1,
-                                playerId = p.id,
-                                teamId = p.teamId
+                                id = d.player.id,
+                                name = d.player.name,
+                                image = d.player.photo,
+                                rarity = d.rarity.ordinal,
+                                playerId = d.player.id,
+                                teamId = d.player.teamId
                             )
                         }
                     )
                     _currentPack.value = pacote
-                    _newStickers.value = finalPlayers
+                    _newStickers.value = drawn
+
+                    // Adiciona automaticamente as figurinhas sorteadas ao álbum do usuário
+                    albumViewModel?.addStickers(drawn.map { Pair(it.player.id, it.rarity) })
                 } finally {
                     _isOpening.value = false
                 }

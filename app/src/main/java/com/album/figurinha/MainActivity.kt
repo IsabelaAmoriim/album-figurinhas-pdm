@@ -25,6 +25,7 @@ import com.album.figurinha.api.ApiClient
 import com.album.figurinha.ui.navigation.Routes
 import com.album.figurinha.ui.screens.*
 import com.album.figurinha.ui.theme.FigurinhaTheme
+import com.album.figurinha.viewmodel.AlbumViewModel
 import com.album.figurinha.viewmodel.PackViewModel
 import com.album.figurinha.viewmodel.WalletViewModel
 import com.album.figurinha.util.ConnectivityObserver
@@ -61,7 +62,11 @@ fun MainNavigation(networkStatus: ConnectivityObserver.Status) {
     val navController = rememberNavController()
     val walletViewModel: WalletViewModel = viewModel()
     val packViewModel: PackViewModel = viewModel()
+    val albumViewModel: AlbumViewModel = viewModel()
+
     val walletState by walletViewModel.wallet.collectAsState()
+    val collectedIds by albumViewModel.collectedIds.collectAsState()
+    val raritiesMap by albumViewModel.raritiesMap.collectAsState()
 
     Scaffold(
         modifier = Modifier.fillMaxSize()
@@ -86,6 +91,8 @@ fun MainNavigation(networkStatus: ConnectivityObserver.Status) {
             composable(Routes.Home.route) {
                 HomeScreen(
                     balance = walletState.moedas,
+                    collectedCount = collectedIds.size,
+                    totalCount = com.album.figurinha.repository.PlayersData.getTotalPlayersCount(),
                     recompensasDisponiveis = walletState.recompensasDisponiveis,
                     onClaimReward = { walletViewModel.claimDailyReward() },
                     networkStatus = networkStatus,
@@ -104,6 +111,8 @@ fun MainNavigation(networkStatus: ConnectivityObserver.Status) {
                 val teamId = backStackEntry.arguments?.getInt("teamId") ?: 1
                 SelectionDetailScreen(
                     teamId = teamId,
+                    collectedIds = collectedIds,
+                    raritiesMap = raritiesMap,
                     onBack = { navController.popBackStack() },
                     onCountryClick = { id -> navController.navigate(Routes.CountryDetail.createRoute(id)) },
                     onPlayerClick = { id -> navController.navigate(Routes.PlayerDetail.createRoute(id)) },
@@ -144,6 +153,7 @@ fun MainNavigation(networkStatus: ConnectivityObserver.Status) {
                 StoreScreen(
                     walletViewModel = walletViewModel,
                     packViewModel = packViewModel,
+                    albumViewModel = albumViewModel,
                     onBack = { navController.popBackStack() }
                 )
             }

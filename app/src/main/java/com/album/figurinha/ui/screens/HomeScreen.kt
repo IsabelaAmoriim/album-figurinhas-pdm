@@ -32,12 +32,17 @@ import com.album.figurinha.util.StickerImageResolver
 @Composable
 fun HomeScreen(
     balance: Int, 
+    collectedCount: Int = 0,
+    totalCount: Int = 20,
     recompensasDisponiveis: Boolean = false,
     onClaimReward: () -> Unit = {},
     networkStatus: ConnectivityObserver.Status,
     onSelectionClick: (Int) -> Unit, 
     onStoreClick: () -> Unit
 ) {
+    val progressFloat = if (totalCount > 0) (collectedCount.toFloat() / totalCount).coerceIn(0f, 1f) else 0f
+    val progressPercentage = (progressFloat * 100).toInt()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -127,11 +132,11 @@ fun HomeScreen(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(text = "Collection Progress", color = Color.White, fontSize = 12.sp)
-                    Text(text = "15%", color = WorldCupGold, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                    Text(text = "$progressPercentage% ($collectedCount/$totalCount)", color = WorldCupGold, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 LinearProgressIndicator(
-                    progress = { 0.15f },
+                    progress = { progressFloat },
                     modifier = Modifier.fillMaxWidth().height(6.dp).clip(CircleShape),
                     color = WorldCupGold,
                     trackColor = Color.DarkGray
