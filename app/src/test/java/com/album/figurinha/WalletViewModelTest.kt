@@ -137,7 +137,10 @@ class FakeSharedPreferences : SharedPreferences {
             if (value != null) tempMap[key] = value else tempMap.remove(key)
             return this
         }
-        override fun putStringSet(key: String, values: MutableSet<String>?): SharedPreferences.Editor = this
+        override fun putStringSet(key: String, values: MutableSet<String>?): SharedPreferences.Editor {
+            if (values != null) tempMap[key] = values else tempMap.remove(key)
+            return this
+        }
         override fun putLong(key: String, value: Long): SharedPreferences.Editor = this
         override fun putFloat(key: String, value: Float): SharedPreferences.Editor = this
         override fun remove(key: String?): SharedPreferences.Editor = this

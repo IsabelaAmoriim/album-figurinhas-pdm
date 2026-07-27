@@ -7,7 +7,8 @@ data class Player(
     val number: Int,
     val position: String,
     val description: String,
-    val teamId: Int
+    val teamId: Int,
+    val rarity: StickerRarity = StickerRarity.COMMON
 )
 data class PlayerStatistics(
     val team: PlayerTeam

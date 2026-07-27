@@ -23,16 +23,8 @@ import com.album.figurinha.util.StickerImageResolver
 
 @Composable
 fun PlayerDetailScreen(playerId: Int, onBack: () -> Unit) {
-    // Mock Data based on ID
-    val basePlayer = when (playerId) {
-        614 -> Player(614, "Neymar Jr", "https://media.api-sports.io/football/players/614.png", 10, "ATACANTE", "...", 1)
-        732 -> Player(732, "Vinícius Jr", "https://media.api-sports.io/football/players/732.png", 7, "ATACANTE", "...", 1)
-        154 -> Player(154, "Lionel Messi", "https://media.api-sports.io/football/players/154.png", 10, "ATACANTE", "...", 2)
-        474 -> Player(474, "E. Martínez", "https://media.api-sports.io/football/players/474.png", 23, "GOLEIRO", "...", 2)
-        276 -> Player(276, "K. Mbappé", "https://media.api-sports.io/football/players/276.png", 10, "ATACANTE", "...", 3)
-        874 -> Player(874, "C. Ronaldo", "https://media.api-sports.io/football/players/874.png", 7, "ATACANTE", "...", 4)
-        else -> Player(playerId, "Jogador", "url", 0, "POSIÇÃO", "...", 1)
-    }
+    val basePlayer = com.album.figurinha.repository.PlayersData.getPlayerById(playerId)
+        ?: Player(playerId, "Jogador", "", 0, "POSIÇÃO", "...", 1)
     
     val player = basePlayer.copy(photo = StickerImageResolver.getPlayerImageUrl(basePlayer.id, basePlayer.photo))
     

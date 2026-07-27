@@ -24,6 +24,8 @@ import com.album.figurinha.ui.components.StickerCard
 import com.album.figurinha.ui.theme.DarkBlueBg
 import com.album.figurinha.ui.theme.WorldCupGold
 import com.album.figurinha.ui.theme.WorldCupYellow
+import com.album.figurinha.viewmodel.AlbumViewModel
+import com.album.figurinha.viewmodel.DrawnSticker
 import com.album.figurinha.viewmodel.PackViewModel
 import com.album.figurinha.viewmodel.WalletViewModel
 
@@ -31,6 +33,7 @@ import com.album.figurinha.viewmodel.WalletViewModel
 fun StoreScreen(
     walletViewModel: WalletViewModel,
     packViewModel: PackViewModel,
+    albumViewModel: AlbumViewModel,
     onBack: () -> Unit
 ) {
     val walletState by walletViewModel.wallet.collectAsState()
@@ -83,7 +86,7 @@ fun StoreScreen(
             val hasEnoughCoins = walletState.moedas >= PackViewModel.PACK_PRICE
 
             Button(
-                onClick = { packViewModel.openPack(walletViewModel) },
+                onClick = { packViewModel.openPack(walletViewModel, albumViewModel) },
                 enabled = !isOpening && hasEnoughCoins,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = WorldCupYellow,
@@ -129,20 +132,20 @@ fun StoreScreen(
                         modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        DiceCard(player = newStickers[0], isRevealed = revealedIndices.contains(0)) { revealedIndices = revealedIndices + 0 }
-                        DiceCard(player = newStickers[1], isRevealed = revealedIndices.contains(1)) { revealedIndices = revealedIndices + 1 }
+                        DiceCard(drawnSticker = newStickers[0], isRevealed = revealedIndices.contains(0)) { revealedIndices = revealedIndices + 0 }
+                        DiceCard(drawnSticker = newStickers[1], isRevealed = revealedIndices.contains(1)) { revealedIndices = revealedIndices + 1 }
                     }
                     
                     // Middle
-                    DiceCard(player = newStickers[2], isRevealed = revealedIndices.contains(2)) { revealedIndices = revealedIndices + 2 }
+                    DiceCard(drawnSticker = newStickers[2], isRevealed = revealedIndices.contains(2)) { revealedIndices = revealedIndices + 2 }
                     
                     // Bottom Row
                     Row(
                         modifier = Modifier.fillMaxWidth().align(Alignment.BottomCenter),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        DiceCard(player = newStickers[3], isRevealed = revealedIndices.contains(3)) { revealedIndices = revealedIndices + 3 }
-                        DiceCard(player = newStickers[4], isRevealed = revealedIndices.contains(4)) { revealedIndices = revealedIndices + 4 }
+                        DiceCard(drawnSticker = newStickers[3], isRevealed = revealedIndices.contains(3)) { revealedIndices = revealedIndices + 3 }
+                        DiceCard(drawnSticker = newStickers[4], isRevealed = revealedIndices.contains(4)) { revealedIndices = revealedIndices + 4 }
                     }
                 }
             }
@@ -232,7 +235,7 @@ fun PremiumPackView() {
 
 @Composable
 fun DiceCard(
-    player: Player, 
+    drawnSticker: DrawnSticker, 
     isRevealed: Boolean, 
     onClick: () -> Unit
 ) {
@@ -267,8 +270,9 @@ fun DiceCard(
         } else {
             Box(modifier = Modifier.graphicsLayer { rotationY = 180f }) {
                 StickerCard(
-                    player = player,
+                    player = drawnSticker.player,
                     isCollected = true,
+                    rarity = drawnSticker.rarity,
                     modifier = Modifier.fillMaxSize()
                 )
             }

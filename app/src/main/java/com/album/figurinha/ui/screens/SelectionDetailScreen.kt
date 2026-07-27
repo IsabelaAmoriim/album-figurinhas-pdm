@@ -27,9 +27,13 @@ import com.album.figurinha.ui.theme.*
 import com.album.figurinha.util.StickerImageResolver
 import java.util.*
 
+import com.album.figurinha.viewmodel.AlbumViewModel
+
 @Composable
 fun SelectionDetailScreen(
     teamId: Int,
+    collectedIds: Set<Int> = emptySet(),
+    raritiesMap: Map<Int, StickerRarity> = emptyMap(),
     onBack: () -> Unit,
     onCountryClick: (Int) -> Unit,
     onPlayerClick: (Int) -> Unit,
@@ -51,14 +55,7 @@ fun SelectionDetailScreen(
     val resolvedShield = StickerImageResolver.getTeamShieldUrl(teamId, "")
     val resolvedFlag = StickerImageResolver.getCountryFlagUrl(teamId)
 
-    val players = listOf(
-        Player(614, "Neymar", "", 10, "ATACANTE", "...", 1),
-        Player(732, "Vinícius Jr", "", 7, "ATACANTE", "...", 1),
-        Player(154, "Lionel Messi", "", 10, "ATACANTE", "...", 2),
-        Player(474, "E. Martínez", "", 23, "GOLEIRO", "...", 2),
-        Player(276, "K. Mbappé", "", 10, "ATACANTE", "...", 3),
-        Player(874, "C. Ronaldo", "", 7, "ATACANTE", "...", 4)
-    ).filter { it.teamId == teamId }
+    val players = com.album.figurinha.repository.PlayersData.getPlayersForTeam(teamId)
 
     Column(
         modifier = Modifier
@@ -163,14 +160,18 @@ fun SelectionDetailScreen(
                         modifier = Modifier.size(24.dp).clip(RoundedCornerShape(4.dp))
                     )
                     Spacer(modifier = Modifier.width(12.dp))
+                    val collectedCountForTeam = players.count { it.id in collectedIds }
+                    val totalCountForTeam = players.size
+                    val teamProgressFloat = if (totalCountForTeam > 0) collectedCountForTeam.toFloat() / totalCountForTeam else 0f
+
                     Text(text = "Collected Stickers", fontWeight = FontWeight.Bold, fontSize = 14.sp)
                     Spacer(modifier = Modifier.weight(1f))
                     LinearProgressIndicator(
-                        progress = { 0.2f },
+                        progress = { teamProgressFloat },
                         modifier = Modifier.width(100.dp).height(8.dp).clip(RoundedCornerShape(4.dp)),
                         color = teamColor
                     )
-                    Text(text = " ${players.size}/11", fontWeight = FontWeight.Bold)
+                    Text(text = " $collectedCountForTeam/$totalCountForTeam", fontWeight = FontWeight.Bold)
                 }
             }
 
@@ -212,15 +213,15 @@ fun SelectionDetailScreen(
                 players.chunked(2).forEach { rowPlayers ->
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                         rowPlayers.forEach { player ->
-                            // For testing silhouettes, let's make Neymar "uncollected" if he's ID 614
-                            val isCollected = player.id != 614 
+                            val isCollected = player.id in collectedIds
+                            val rarity = player.rarity
                             
                             StickerCard(
                                 player = player,
                                 isCollected = isCollected,
                                 teamColor = teamColor,
                                 teamShield = resolvedShield,
-                                rarity = if (player.id == 154 || player.id == 874) StickerRarity.LEGENDARY else StickerRarity.COMMON,
+                                rarity = rarity,
                                 modifier = Modifier.weight(1f).clickable { onPlayerClick(player.id) }
                             )
                         }
