@@ -36,6 +36,7 @@ fun StoreScreen(
     val walletState by walletViewModel.wallet.collectAsState()
     val newStickers by packViewModel.newStickers.collectAsState()
     val isOpening by packViewModel.isOpening.collectAsState()
+    val errorMessage by packViewModel.errorMessage.collectAsState()
     
     // Track set of revealed indices
     var revealedIndices by remember { mutableStateOf(setOf<Int>()) }
@@ -65,20 +66,49 @@ fun StoreScreen(
         if (newStickers.isEmpty()) {
             PremiumPackView()
 
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(30.dp))
+
+            if (errorMessage != null) {
+                Text(
+                    text = errorMessage!!,
+                    color = Color.Red,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 10.dp)
+                )
+            } else {
+                Spacer(modifier = Modifier.height(10.dp))
+            }
+
+            val hasEnoughCoins = walletState.moedas >= PackViewModel.PACK_PRICE
 
             Button(
                 onClick = { packViewModel.openPack(walletViewModel) },
-                enabled = !isOpening && walletState.moedas >= 20,
-                colors = ButtonDefaults.buttonColors(containerColor = WorldCupYellow),
+                enabled = !isOpening && hasEnoughCoins,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = WorldCupYellow,
+                    disabledContainerColor = Color.DarkGray
+                ),
                 modifier = Modifier.fillMaxWidth().height(64.dp),
                 shape = RoundedCornerShape(16.dp),
                 elevation = ButtonDefaults.buttonElevation(defaultElevation = 8.dp)
             ) {
                 if (isOpening) {
                     CircularProgressIndicator(color = Color.Black, modifier = Modifier.size(24.dp))
+                } else if (!hasEnoughCoins) {
+                    Text(
+                        text = "SALDO INSUFICIENTE (${PackViewModel.PACK_PRICE} MOEDAS)",
+                        color = Color.LightGray,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp
+                    )
                 } else {
-                    Text(text = "GET PACK (20 COINS)", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 16.sp)
+                    Text(
+                        text = "OBTER PACOTE (${PackViewModel.PACK_PRICE} MOEDAS)",
+                        color = Color.Black,
+                        fontWeight = FontWeight.Black,
+                        fontSize = 16.sp
+                    )
                 }
             }
         } else {
