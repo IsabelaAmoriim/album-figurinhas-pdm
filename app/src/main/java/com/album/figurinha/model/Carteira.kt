@@ -2,7 +2,8 @@ package com.album.figurinha.model
 
 data class Carteira(
     var moedas: Int = 0,
-    var recompensasDisponiveis: Boolean = true
+    var recompensasDisponiveis: Boolean = true,
+    var dataUltimoResgate: String? = null
 ) {
 
     fun adicionarMoedas(quantidade: Int) {

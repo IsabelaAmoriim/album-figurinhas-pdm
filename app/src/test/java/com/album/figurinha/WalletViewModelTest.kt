@@ -61,6 +61,36 @@ class WalletViewModelTest {
     }
 
     @Test
+    fun testApenasUmResgatePorDia() {
+        val viewModel = WalletViewModel(fakeApplication, fakePrefs)
+        viewModel.claimDailyReward()
+
+        // Primeiro resgate: saldo passa de 100 para 150
+        assertEquals(150, viewModel.wallet.value.moedas)
+        assertFalse(viewModel.wallet.value.recompensasDisponiveis)
+        assertNotNull(viewModel.wallet.value.dataUltimoResgate)
+
+        // Tentativa de segundo resgate no mesmo dia não deve alterar o saldo
+        viewModel.claimDailyReward()
+        assertEquals(150, viewModel.wallet.value.moedas)
+    }
+
+    @Test
+    fun testResgateLiberadoEmNovoDia() {
+        // Simula último resgate realizado ontem ("2026-07-26")
+        fakePrefs.edit().putString(WalletViewModel.KEY_DATA_ULTIMO_RESGATE, "2026-07-26").apply()
+
+        val viewModel = WalletViewModel(fakeApplication, fakePrefs)
+        // Como o resgate foi ontem, a recompensa deve estar disponível hoje
+        assertTrue(viewModel.wallet.value.recompensasDisponiveis)
+
+        // Resgata o bônus hoje
+        viewModel.claimDailyReward()
+        assertEquals(150, viewModel.wallet.value.moedas)
+        assertFalse(viewModel.wallet.value.recompensasDisponiveis)
+    }
+
+    @Test
     fun testPersistenciaEntreInstanciasDoViewModel() {
         // Primeira sessão: gasta 40 moedas e resgata recompensa diária (+50 moedas) -> 110 moedas
         val vm1 = WalletViewModel(fakeApplication, fakePrefs)
@@ -103,7 +133,10 @@ class FakeSharedPreferences : SharedPreferences {
             tempMap[key] = value
             return this
         }
-        override fun putString(key: String, value: String?): SharedPreferences.Editor = this
+        override fun putString(key: String, value: String?): SharedPreferences.Editor {
+            if (value != null) tempMap[key] = value else tempMap.remove(key)
+            return this
+        }
         override fun putStringSet(key: String, values: MutableSet<String>?): SharedPreferences.Editor = this
         override fun putLong(key: String, value: Long): SharedPreferences.Editor = this
         override fun putFloat(key: String, value: Float): SharedPreferences.Editor = this
