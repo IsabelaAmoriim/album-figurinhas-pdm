@@ -19,19 +19,29 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.album.figurinha.model.Player
 import com.album.figurinha.ui.theme.*
+import com.album.figurinha.util.StickerImageResolver
 
 @Composable
 fun PlayerDetailScreen(playerId: Int, onBack: () -> Unit) {
     // Mock Data based on ID
-    val player = when (playerId) {
-        1 -> Player(1, "Neymar Jr", "https://media.api-sports.io/football/players/614.png", 10, "ATACANTE", "...", 1)
-        2 -> Player(2, "Vinícius Jr", "https://media.api-sports.io/football/players/732.png", 7, "ATACANTE", "...", 1)
-        3 -> Player(3, "Lionel Messi", "https://media.api-sports.io/football/players/154.png", 10, "ATACANTE", "...", 2)
-        23 -> Player(23, "E. Martínez", "https://media.api-sports.io/football/players/474.png", 23, "GOLEIRO", "...", 2)
+    val basePlayer = when (playerId) {
+        614 -> Player(614, "Neymar Jr", "https://media.api-sports.io/football/players/614.png", 10, "ATACANTE", "...", 1)
+        732 -> Player(732, "Vinícius Jr", "https://media.api-sports.io/football/players/732.png", 7, "ATACANTE", "...", 1)
+        154 -> Player(154, "Lionel Messi", "https://media.api-sports.io/football/players/154.png", 10, "ATACANTE", "...", 2)
+        474 -> Player(474, "E. Martínez", "https://media.api-sports.io/football/players/474.png", 23, "GOLEIRO", "...", 2)
+        276 -> Player(276, "K. Mbappé", "https://media.api-sports.io/football/players/276.png", 10, "ATACANTE", "...", 3)
+        874 -> Player(874, "C. Ronaldo", "https://media.api-sports.io/football/players/874.png", 7, "ATACANTE", "...", 4)
         else -> Player(playerId, "Jogador", "url", 0, "POSIÇÃO", "...", 1)
     }
     
-    val teamColor = if (player.teamId == 1) BrazilGreen else ArgentinaBlue
+    val player = basePlayer.copy(photo = StickerImageResolver.getPlayerImageUrl(basePlayer.id, basePlayer.photo))
+    
+    val teamColor = when(player.teamId) {
+        1 -> BrazilGreen
+        2 -> ArgentinaBlue
+        3 -> FranceBlue
+        else -> Color(0xFFE42518)
+    }
 
     Column(
         modifier = Modifier

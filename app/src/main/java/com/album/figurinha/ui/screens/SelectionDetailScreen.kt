@@ -19,11 +19,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
+import coil.compose.SubcomposeAsyncImage
 import com.album.figurinha.model.Player
 import com.album.figurinha.model.StickerRarity
 import com.album.figurinha.ui.components.StickerCard
 import com.album.figurinha.ui.theme.*
+import com.album.figurinha.util.StickerImageResolver
 import java.util.*
 
 @Composable
@@ -34,28 +35,29 @@ fun SelectionDetailScreen(
     onPlayerClick: (Int) -> Unit,
     onCoachClick: (Int) -> Unit
 ) {
-    // Mock Data for now
+    // Resolved Data
     val teamName = when(teamId) {
         1 -> "BRASIL"
         2 -> "ARGENTINA"
-        else -> "FRANÇA"
+        3 -> "FRANÇA"
+        else -> "PORTUGAL"
     }
     val teamColor = when(teamId) {
         1 -> BrazilGreen
         2 -> ArgentinaBlue
-        else -> FranceBlue
+        3 -> FranceBlue
+        else -> Color(0xFFE42518)
     }
-    val shieldUrl = when(teamId) {
-        1 -> "https://media.api-sports.io/football/teams/6.png"
-        2 -> "https://media.api-sports.io/football/teams/26.png"
-        else -> "https://media.api-sports.io/football/teams/2.png"
-    }
+    val resolvedShield = StickerImageResolver.getTeamShieldUrl(teamId, "")
+    val resolvedFlag = StickerImageResolver.getCountryFlagUrl(teamId)
 
     val players = listOf(
-        Player(1, "Neymar", "https://media.api-sports.io/football/players/614.png", 10, "ATACANTE", "...", 1),
-        Player(2, "Vinícius Jr", "https://media.api-sports.io/football/players/732.png", 7, "ATACANTE", "...", 1),
-        Player(3, "Lionel Messi", "https://media.api-sports.io/football/players/154.png", 10, "ATACANTE", "...", 2),
-        Player(23, "E. Martínez", "https://media.api-sports.io/football/players/474.png", 23, "GOLEIRO", "...", 2)
+        Player(614, "Neymar", "", 10, "ATACANTE", "...", 1),
+        Player(732, "Vinícius Jr", "", 7, "ATACANTE", "...", 1),
+        Player(154, "Lionel Messi", "", 10, "ATACANTE", "...", 2),
+        Player(474, "E. Martínez", "", 23, "GOLEIRO", "...", 2),
+        Player(276, "K. Mbappé", "", 10, "ATACANTE", "...", 3),
+        Player(874, "C. Ronaldo", "", 7, "ATACANTE", "...", 4)
     ).filter { it.teamId == teamId }
 
     Column(
@@ -86,7 +88,7 @@ fun SelectionDetailScreen(
                     colors = ButtonDefaults.textButtonColors(contentColor = Color.White),
                     modifier = Modifier.background(Color.Black.copy(alpha = 0.2f), RoundedCornerShape(8.dp))
                 ) {
-                    Text(text = "Sobre o país")
+                    Text(text = "About Country")
                 }
             }
 
@@ -96,12 +98,16 @@ fun SelectionDetailScreen(
                 verticalArrangement = Arrangement.Center
             ) {
                 Surface(
-                    modifier = Modifier.size(90.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    color = Color.White.copy(alpha = 0.9f)
+                    modifier = Modifier.size(100.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    color = Color.White.copy(alpha = 0.95f)
                 ) {
                     Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(12.dp)) {
-                        AsyncImage(model = shieldUrl, contentDescription = null)
+                        SubcomposeAsyncImage(
+                            model = resolvedShield, 
+                            contentDescription = null,
+                            loading = { CircularProgressIndicator(color = teamColor) }
+                        )
                     }
                 }
 
@@ -109,11 +115,10 @@ fun SelectionDetailScreen(
                 Text(text = teamName, color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.Black)
 
                 Row(modifier = Modifier.padding(top = 8.dp)) {
-                    repeat(if (teamId == 1) 5 else if (teamId == 2) 3 else 2) {
+                    repeat(if (teamId == 1) 5 else if (teamId == 2) 3 else if (teamId == 3) 2 else 0) {
                         Icon(Icons.Default.Star, null, tint = WorldCupYellow, modifier = Modifier.size(20.dp))
                     }
                 }
-                Text(text = "${if (teamId == 1) 5 else if (teamId == 2) 3 else 2} Títulos Mundiais", color = Color.White, fontSize = 12.sp)
             }
         }
 
@@ -130,10 +135,10 @@ fun SelectionDetailScreen(
                 color = Color.White
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Text(text = "SOBRE A SELEÇÃO", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = teamColor)
+                    Text(text = "ABOUT SELECTION", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = teamColor)
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "A Seleção ${teamName.lowercase(Locale.getDefault()).replaceFirstChar { it.titlecase(Locale.getDefault()) }} de Futebol é uma referência global...",
+                        text = "The ${teamName.lowercase(Locale.getDefault()).replaceFirstChar { it.titlecase(Locale.getDefault()) }} National Team is a global reference in football...",
                         fontSize = 12.sp,
                         color = Color.Gray
                     )
@@ -142,6 +147,7 @@ fun SelectionDetailScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Progress
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
@@ -151,10 +157,16 @@ fun SelectionDetailScreen(
                     modifier = Modifier.padding(12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(text = "Figurinhas Coletadas", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                    SubcomposeAsyncImage(
+                        model = resolvedFlag,
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp).clip(RoundedCornerShape(4.dp))
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(text = "Collected Stickers", fontWeight = FontWeight.Bold, fontSize = 14.sp)
                     Spacer(modifier = Modifier.weight(1f))
                     LinearProgressIndicator(
-                        progress = { 0.5f },
+                        progress = { 0.2f },
                         modifier = Modifier.width(100.dp).height(8.dp).clip(RoundedCornerShape(4.dp)),
                         color = teamColor
                     )
@@ -164,7 +176,7 @@ fun SelectionDetailScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
             
-            Text(text = "COMISSÃO TÉCNICA", color = Color.Gray, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+            Text(text = "COACHING STAFF", color = Color.Gray, fontWeight = FontWeight.Bold, fontSize = 12.sp)
             Spacer(modifier = Modifier.height(12.dp))
             
             Surface(
@@ -177,8 +189,8 @@ fun SelectionDetailScreen(
                     Box(modifier = Modifier.size(50.dp).clip(CircleShape).background(Color.Gray))
                     Spacer(modifier = Modifier.width(16.dp))
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(text = if (teamId == 1) "Ancelotti" else "Scaloni", color = Color.White, fontWeight = FontWeight.Bold)
-                        Text(text = "Treinador Principal", color = Color.Gray, fontSize = 12.sp)
+                        Text(text = if (teamId == 1) "Carlo Ancelotti" else if (teamId == 2) "Lionel Scaloni" else "Head Coach", color = Color.White, fontWeight = FontWeight.Bold)
+                        Text(text = "Technical Lead", color = Color.Gray, fontSize = 12.sp)
                     }
                     Icon(imageVector = Icons.Default.Star, contentDescription = null, tint = WorldCupYellow)
                 }
@@ -187,7 +199,7 @@ fun SelectionDetailScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = "ELENCO",
+                text = "PLAYER LIST",
                 modifier = Modifier.align(Alignment.CenterHorizontally),
                 fontWeight = FontWeight.Bold,
                 color = Color.Gray
@@ -200,12 +212,15 @@ fun SelectionDetailScreen(
                 players.chunked(2).forEach { rowPlayers ->
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                         rowPlayers.forEach { player ->
+                            // For testing silhouettes, let's make Neymar "uncollected" if he's ID 614
+                            val isCollected = player.id != 614 
+                            
                             StickerCard(
                                 player = player,
-                                isCollected = true,
+                                isCollected = isCollected,
                                 teamColor = teamColor,
-                                teamShield = shieldUrl,
-                                rarity = if (player.id == 3) StickerRarity.LEGENDARY else StickerRarity.COMMON,
+                                teamShield = resolvedShield,
+                                rarity = if (player.id == 154 || player.id == 874) StickerRarity.LEGENDARY else StickerRarity.COMMON,
                                 modifier = Modifier.weight(1f).clickable { onPlayerClick(player.id) }
                             )
                         }
@@ -215,6 +230,7 @@ fun SelectionDetailScreen(
                     }
                 }
             }
+            Spacer(modifier = Modifier.height(32.dp))
         }
     }
 }

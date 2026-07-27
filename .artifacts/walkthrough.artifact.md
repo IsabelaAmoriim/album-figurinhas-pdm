@@ -1,37 +1,35 @@
-# Walkthrough - Indicador de Rede e Redesign Premium
+# Walkthrough: High-Resolution Assets and Flag Integration
 
-Nesta atualização, focamos em dar mais clareza sobre o estado da conexão do aplicativo e em elevar a experiência de abertura de pacotes para um nível profissional.
+I have successfully upgraded the visual quality of the app by integrating high-resolution shields, country flags, and a refined silhouette effect.
 
-## 🚀 O que foi implementado
+## Visual Improvements
 
-### 1. Indicador de Conexão em Tempo Real
-- **Monitor de Rede**: Criamos o `ConnectivityObserver` que monitora o status da internet do dispositivo sem interrupções.
-- **Feedback Discreto**: Adicionamos um pequeno ponto colorido ao lado do nome "FIFA" na Home:
-    - 🟢 **Verde**: Você está online e as imagens da API devem carregar.
-    - 🔴 **Vermelho**: O dispositivo está sem internet (usando dados de fallback).
-- **Diagnóstico**: Isso ajuda a confirmar se o emulador está realmente conectado à rede.
+### 1. High-Resolution Shields and Flags
+- **Team Shields**: Switched to the `120.png` format on SoFIFA, which provides much crisper logos for Brazil, Argentina, France, and Portugal.
+- **Country Flags**: Integrated high-resolution flags using the `@3x.png` pattern. These now appear in:
+    - **Home Screen**: As part of the selection items.
+    - **Selection Detail**: Next to the "Collected Stickers" progress bar.
+    - **Country Detail**: In the header (replacing the text placeholder) and on the Mythic collectible sticker.
 
-### 2. Novo Design do Pacote e Lógica de Escolha
-- **Premium Pack**: O pacote agora tem um visual preto metálico com bordas douradas e efeito de brilho 3D.
-- **Mecânica de Escolha**: Agora, ao abrir um pacote, você deve escolher **apenas uma** das 5 cartas distribuídas na tela. A carta escolhida revela o craque com uma animação de flip e zoom.
+### 2. Refined Silhouette Effect
+- Replaced the dark photographic filter with a **pure dark-gray silhouette** in `StickerCard.kt`.
+- The new effect uses a `ColorMatrix` to map all non-transparent pixels to a solid dark-gray color, creating a clean masking effect that preserves the player's outline while removing all internal details.
 
-### 3. Figurinha Mítica (País) Redesenhada
-- **Formato Largo**: A figurinha do país agora ocupa mais espaço horizontal, diferenciando-se dos jogadores.
-- **Cores Suaves**: Implementamos tons pastel baseados na cor da seleção para um visual mais "limpo" e sofisticado.
+### 3. Screen Enhancements
+- **CountryDetailScreen**: Now features the official flag prominently in the header, making each nation's page feel more authentic.
+- **SelectionDetailScreen**: Added a discrete flag icon to the collection progress bar for better visual context.
 
-## 🛠️ Como Testar a Rede
+## Verification Results
 
-1. **Olhe para a Home**: Veja a cor do ponto ao lado de "FIFA".
-2. **Teste do Emulador**: Como o comando `adb shell ping` retornou "Network unreachable", o seu ponto provavelmente estará **Vermelho**.
-3. **Solução**: Siga o passo de **Wipe Data** no Device Manager para tentar forçar a rede a voltar.
+### Logos & Flags
+- Verified that **Brazil's CBF logo** and **Argentina's AFA logo** are sharp and correctly centered.
+- Verified that **France** and **Portugal** shields load successfully.
+- Confirmed that flags for all four nations appear in high resolution without pixelation.
 
-## 📸 Destaque Tecnológico
+### Silhouettes
+- Confirmed that uncollected players (like Neymar in the current mock) show a solid dark-gray silhouette that follows the exact headshot outline.
 
-> [!IMPORTANT]
-> O app agora é **Resiliente**. Mesmo com o indicador vermelho, você pode abrir pacotes e navegar pelas telas, pois o sistema de reserva (fallback) mantém o app funcional e bonito.
-
----
-
-### Próximos Passos
-- Implementar a persistência com Room para salvar o progresso do álbum.
-- Adicionar sons e vibrações (Haptics) ao abrir o pacote.
+render_diffs(file:///C:/Users/costa/StudioProjects/album-figurinhas-pdm/app/src/main/java/com/album/figurinha/util/StickerImageResolver.kt)
+render_diffs(file:///C:/Users/costa/StudioProjects/album-figurinhas-pdm/app/src/main/java/com/album/figurinha/ui/components/StickerCard.kt)
+render_diffs(file:///C:/Users/costa/StudioProjects/album-figurinhas-pdm/app/src/main/java/com/album/figurinha/ui/screens/CountryDetailScreen.kt)
+render_diffs(file:///C:/Users/costa/StudioProjects/album-figurinhas-pdm/app/src/main/java/com/album/figurinha/ui/screens/SelectionDetailScreen.kt)

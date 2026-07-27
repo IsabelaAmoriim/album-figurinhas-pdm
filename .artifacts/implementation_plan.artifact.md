@@ -1,36 +1,36 @@
-# Plano de Implementação - Design do Pacote, Cartas Míticas e Solução de Imagens
+# Improve Image Resolution and Add Country Assets
 
-Este plano visa elevar a estética visual do pacote de figurinhas, redesenhar as cartas de nação (míticas) com cores suaves e resolver definitivamente o problema de exibição de imagens usando abordagens híbridas.
-
-## User Review Required
-
-> [!IMPORTANT]
-> **Imagens:** O Android Studio/Emulador muitas vezes bloqueia conexões externas por DNS ou HTTPS. Vamos implementar um sistema de **"Image Source Switcher"**: ele tentará baixar da API, mas terá um mapeamento para imagens locais (`res/drawable`) para garantir que o app nunca fique vazio.
-> **Design do Pacote:** O novo design usará gradientes dinâmicos e sombras projetadas para parecer um objeto 3D real na tela.
+This plan aims to improve the visual quality of stickers and logos, fix missing team assets, add country flags, and refine the locked player silhouette.
 
 ## Proposed Changes
 
-### 1. Novo Design do Pacote (Store)
-#### [MODIFY] [StoreScreen.kt](file:///C:/Users/costa/StudioProjects/album-figurinhas-pdm/app/src/main/java/com/album/figurinha/ui/screens/StoreScreen.kt)
-- Criar um componente `PremiumPack` com gradiente metálico, bordas chanfradas e brilho dinâmico.
-- Adicionar uma sombra suave (shadow) para dar profundidade.
+### [Util]
+#### [MODIFY] [StickerImageResolver.kt](file:///C:/Users/costa/StudioProjects/album-figurinhas-pdm/app/src/main/java/com/album/figurinha/util/StickerImageResolver.kt)
+- Add a mapping for country codes (BR, AR, FR, PT).
+- Add `getCountryFlagUrl(teamId: Int)` to return high-resolution flag URLs (`@3x.png`).
+- Update `getTeamShieldUrl` to use `https://cdn.sofifa.net/teams/{id}/120.png` for better resolution and reliability.
+- Ensure player images continue using the best available headshot origin.
 
-### 2. Redesign da Carta do País (Mythic)
+### [UI Components]
 #### [MODIFY] [StickerCard.kt](file:///C:/Users/costa/StudioProjects/album-figurinhas-pdm/app/src/main/java/com/album/figurinha/ui/components/StickerCard.kt)
-- Para raridade `MYTHIC`: usar um formato levemente mais largo e cores "pastel" ou suaves baseadas na seleção.
-- A moldura será menos agressiva, focando em um brilho interno suave.
+- Redesign the silhouette effect: instead of a darkened photo, use a solid dark-gray color filter that preserves only the alpha channel (masking effect) if possible, or a very aggressive black-out filter to create a pure silhouette.
+- Ensure the silhouette looks clean and consistent.
 
-### 3. Solução Híbrida de Imagens
-#### [MODIFY] [StickerCard.kt](file:///C:/Users/costa/StudioProjects/album-figurinhas-pdm/app/src/main/java/com/album/figurinha/ui/components/StickerCard.kt)
-- Adicionar suporte a `Painter` que aceita tanto URLs quanto IDs de recursos locais.
-- Criar um utilitário simples que mapeia IDs de jogadores famosos para ícones/imagens de reserva se a URL falhar.
+### [UI Screens]
+#### [MODIFY] [CountryDetailScreen.kt](file:///C:/Users/costa/StudioProjects/album-figurinhas-pdm/app/src/main/java/com/album/figurinha/ui/screens/CountryDetailScreen.kt)
+- Replace the text-based circular icon (e.g., "BR") with the actual country flag image.
+- Use the high-resolution flag in the Mythic sticker for each selection.
 
-### 4. Diagnóstico do Android Studio
-- **Explicação:** Sim, o emulador do Android Studio pode ser o culpado. Às vezes, o DNS do computador host não é passado corretamente, ou o `cleartextTraffic` está bloqueado (embora estejamos usando HTTPS). Vou adicionar logs de erro específicos da Coil para vermos o código de erro exato (ex: 403 Forbidden ou UnknownHostException).
+#### [MODIFY] [HomeScreen.kt](file:///C:/Users/costa/StudioProjects/album-figurinhas-pdm/app/src/main/java/com/album/figurinha/ui/screens/HomeScreen.kt)
+- Ensure the team selection items use the updated high-resolution shield URLs.
+
+#### [MODIFY] [SelectionDetailScreen.kt](file:///C:/Users/costa/StudioProjects/album-figurinhas-pdm/app/src/main/java/com/album/figurinha/ui/screens/SelectionDetailScreen.kt)
+- Verify that the team shield in the header is using the 120px version for maximum clarity.
 
 ## Verification Plan
 
 ### Manual Verification
-- Visualizar o novo pacote na loja.
-- Abrir um pacote e ver se a imagem de reserva aparece caso a internet falhe.
-- Entrar na tela do país e verificar as cores suavizadas da figurinha mítica.
+- **Flags**: Open the "About Country" screen for each selection and verify the flag appears in the header and on the Mythic sticker.
+- **Resolution**: Check the Brazil/Argentina shields on the Home and Selection screens to ensure they are crisp.
+- **Silhouettes**: Verify that locked players (like Neymar in the current mock) appear as solid dark gray silhouettes.
+- **Logos**: Verify that France and Portugal logos now appear correctly if they were missing before.

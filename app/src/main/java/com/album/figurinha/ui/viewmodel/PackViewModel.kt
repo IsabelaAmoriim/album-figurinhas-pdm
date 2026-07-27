@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.album.figurinha.model.Player
 import com.album.figurinha.repository.FootballRepository
+import com.album.figurinha.util.StickerImageResolver
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -17,14 +18,16 @@ class PackViewModel(private val repository: FootballRepository = FootballReposit
     private val _isOpening = MutableStateFlow(false)
     val isOpening: StateFlow<Boolean> = _isOpening.asStateFlow()
 
-    // Fallback data in case API fails
+    // Fallback data with pre-resolved URLs (SoFifa)
     private val fallbackPlayers = listOf(
-        Player(1, "Neymar Jr", "https://media.api-sports.io/football/players/614.png", 10, "ATACANTE", "...", 1),
-        Player(2, "Vinícius Jr", "https://media.api-sports.io/football/players/732.png", 7, "ATACANTE", "...", 1),
-        Player(3, "Lionel Messi", "https://media.api-sports.io/football/players/154.png", 10, "ATACANTE", "...", 2),
-        Player(4, "C. Ronaldo", "https://media.api-sports.io/football/players/874.png", 7, "ATACANTE", "...", 4),
-        Player(5, "K. Mbappé", "https://media.api-sports.io/football/players/276.png", 10, "ATACANTE", "...", 3)
-    )
+        Player(614, "Neymar Jr", "", 10, "ATACANTE", "...", 1),
+        Player(732, "Vinícius Jr", "", 7, "ATACANTE", "...", 1),
+        Player(154, "Lionel Messi", "", 10, "ATACANTE", "...", 2),
+        Player(276, "K. Mbappé", "", 10, "ATACANTE", "...", 3),
+        Player(874, "C. Ronaldo", "", 7, "ATACANTE", "...", 4)
+    ).map { 
+        it.copy(photo = StickerImageResolver.getPlayerImageUrl(it.id, "")) 
+    }
 
     fun openPack(walletViewModel: WalletViewModel) {
         if (walletViewModel.spendCoins(20)) {
@@ -40,21 +43,20 @@ class PackViewModel(private val repository: FootballRepository = FootballReposit
                         val randomTeam = teams.random()
                         val teamPlayers = repository.getPlayers(randomTeam.id).response.map { it.player }
                         if (teamPlayers.isNotEmpty()) {
-                            players.add(teamPlayers.random())
+                            val p = teamPlayers.random()
+                            // Resolve URL immediately
+                            players.add(p.copy(photo = StickerImageResolver.getPlayerImageUrl(p.id, p.photo)))
                         }
                     }
                     
                     if (players.size < 5) {
-                         Log.w("PackViewModel", "API returned insufficient players, using some fallback")
                          players.addAll(fallbackPlayers.take(5 - players.size))
                     }
                     
-                    _newStickers.value = players
-                    Log.d("PackViewModel", "Pack opened successfully with ${players.size} players")
+                    _newStickers.value = players.shuffled()
                 } catch (e: Exception) {
                     Log.e("PackViewModel", "API Error: ${e.message}. Using fallback data.", e)
-                    // If API fails, we MUST provide data so the UI animates
-                    _newStickers.value = fallbackPlayers.shuffled().take(5)
+                    _newStickers.value = fallbackPlayers.shuffled()
                 } finally {
                     _isOpening.value = false
                 }
