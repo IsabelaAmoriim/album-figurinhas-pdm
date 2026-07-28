@@ -129,8 +129,20 @@ class AlbumViewModel @JvmOverloads constructor(
     val isSelling: StateFlow<Boolean> = _isSelling.asStateFlow()
 
     /** Seleções do catálogo, expostas para a UI não acessar o repositório direto. */
-    val catalogSelections: List<CatalogSticker> =
-        StickerCatalog.getSelections()
+    val catalogSelections: List<CatalogSticker>
+        get() = StickerCatalog.getSelections()
+
+    /**
+     * Notifica que o catalogo foi populado pela API.
+     * Recalcula progresso, secoes e repetidas com os dados atuais.
+     */
+    fun onCatalogLoaded() {
+        applyState(
+            _quantities.value,
+            _raritiesMap.value,
+            shouldPersist = false
+        )
+    }
 
     init {
         val rarities =

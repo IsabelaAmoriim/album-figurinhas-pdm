@@ -6,8 +6,8 @@ sealed class Routes(val route: String) {
     object SelectionDetail : Routes("selection_detail/{teamId}") {
         fun createRoute(teamId: Int) = "selection_detail/$teamId"
     }
-    object PlayerDetail : Routes("player_detail/{playerId}") {
-        fun createRoute(playerId: Int) = "player_detail/$playerId"
+    object PlayerDetail : Routes("player_detail/{teamId}/{playerId}") {
+        fun createRoute(teamId: Int, playerId: Int) = "player_detail/$teamId/$playerId"
     }
     object CoachDetail : Routes("coach_detail/{coachId}") {
         fun createRoute(coachId: Int) = "coach_detail/$coachId"

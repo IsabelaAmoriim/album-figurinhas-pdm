@@ -2,7 +2,9 @@ package com.album.figurinha.ui.screens
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -48,15 +50,12 @@ fun HomeScreen(
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Top Bar with Wallet and Connectivity
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = "FIFA",
                     color = WorldCupYellow,
@@ -66,27 +65,18 @@ fun HomeScreen(
 
                 Spacer(modifier = Modifier.width(8.dp))
 
-                // Discrete Connectivity Dot
                 Box(
                     modifier = Modifier
                         .size(8.dp)
                         .clip(CircleShape)
                         .background(
-                            if (
-                                networkStatus ==
-                                ConnectivityObserver.Status.Available
-                            ) {
-                                Color.Green
-                            } else {
-                                Color.Red
-                            }
+                            if (networkStatus == ConnectivityObserver.Status.Available) Color.Green
+                            else Color.Red
                         )
                 )
             }
 
-            CoinWallet(
-                balance = balance
-            )
+            CoinWallet(balance = balance)
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -96,105 +86,62 @@ fun HomeScreen(
                 color = CardBackground,
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.fillMaxWidth(),
-                border = androidx.compose.foundation.BorderStroke(
-                    1.dp,
-                    WorldCupGold
-                )
+                border = BorderStroke(1.dp, WorldCupGold)
             ) {
                 Row(
-                    modifier = Modifier
-                        .padding(12.dp)
-                        .fillMaxWidth(),
+                    modifier = Modifier.padding(12.dp).fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             imageVector = Icons.Default.Star,
                             contentDescription = null,
                             tint = WorldCupYellow,
                             modifier = Modifier.size(24.dp)
                         )
-
                         Spacer(modifier = Modifier.width(10.dp))
-
                         Column {
-                            Text(
-                                text = "Recompensa Diária",
-                                color = Color.White,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 14.sp
-                            )
-
-                            Text(
-                                text = "+50 moedas grátis!",
-                                color = Color.Gray,
-                                fontSize = 12.sp
-                            )
+                            Text("Recompensa Diária", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            Text("+50 moedas grátis!", color = Color.Gray, fontSize = 12.sp)
                         }
                     }
 
                     Button(
                         onClick = onClaimReward,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = WorldCupYellow
-                        ),
+                        colors = ButtonDefaults.buttonColors(containerColor = WorldCupYellow),
                         shape = RoundedCornerShape(8.dp),
-                        contentPadding = PaddingValues(
-                            horizontal = 12.dp,
-                            vertical = 4.dp
-                        )
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
                     ) {
-                        Text(
-                            text = "RESGATAR",
-                            color = Color.Black,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 12.sp
-                        )
+                        Text("RESGATAR", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                     }
                 }
             }
-
             Spacer(modifier = Modifier.height(16.dp))
         }
 
-        // Progress Bar Global - valores já calculados no AlbumViewModel
         Surface(
             modifier = Modifier.fillMaxWidth(),
             color = CardBackground,
             shape = RoundedCornerShape(12.dp)
         ) {
-            Column(
-                modifier = Modifier.padding(12.dp)
-            ) {
+            Column(modifier = Modifier.padding(12.dp)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
+                    Text("Collection Progress", color = Color.White, fontSize = 12.sp)
                     Text(
-                        text = "Collection Progress",
-                        color = Color.White,
-                        fontSize = 12.sp
-                    )
-
-                    Text(
-                        text = "${progress.percentage}% (${progress.collected}/${progress.total})",
+                        "${progress.percentage}% (${progress.collected}/${progress.total})",
                         color = WorldCupGold,
                         fontWeight = FontWeight.Bold,
                         fontSize = 12.sp
                     )
                 }
-
                 Spacer(modifier = Modifier.height(8.dp))
-
                 LinearProgressIndicator(
                     progress = { progress.fraction },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(6.dp)
-                        .clip(CircleShape),
+                    modifier = Modifier.fillMaxWidth().height(6.dp).clip(CircleShape),
                     color = WorldCupGold,
                     trackColor = Color.DarkGray
                 )
@@ -203,12 +150,7 @@ fun HomeScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        Text(
-            text = "World Cup",
-            color = Color.White,
-            fontSize = 32.sp,
-            fontWeight = FontWeight.Black
-        )
+        Text("World Cup", color = Color.White, fontSize = 32.sp, fontWeight = FontWeight.Black)
 
         Surface(
             color = WorldCupYellow,
@@ -216,11 +158,8 @@ fun HomeScreen(
             modifier = Modifier.padding(top = 4.dp)
         ) {
             Text(
-                text = "2026",
-                modifier = Modifier.padding(
-                    horizontal = 12.dp,
-                    vertical = 2.dp
-                ),
+                "2022",
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp),
                 fontWeight = FontWeight.Bold,
                 color = Color.Black
             )
@@ -230,70 +169,35 @@ fun HomeScreen(
 
         Button(
             onClick = onStoreClick,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = WorldCupYellow
-            ),
+            colors = ButtonDefaults.buttonColors(containerColor = WorldCupYellow),
             shape = RoundedCornerShape(12.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp)
+            modifier = Modifier.fillMaxWidth().height(50.dp)
         ) {
-            Text(
-                text = "GET STICKER PACKS",
-                color = Color.Black,
-                fontWeight = FontWeight.Bold
-            )
+            Text("GET STICKER PACKS", color = Color.Black, fontWeight = FontWeight.Bold)
         }
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Acesso ao álbum (issue #8)
         OutlinedButton(
             onClick = onAlbumClick,
             shape = RoundedCornerShape(12.dp),
-            border = androidx.compose.foundation.BorderStroke(
-                1.dp,
-                WorldCupGold
-            ),
-            colors = ButtonDefaults.outlinedButtonColors(
-                contentColor = WorldCupGold
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp)
+            border = BorderStroke(1.dp, WorldCupGold),
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = WorldCupGold),
+            modifier = Modifier.fillMaxWidth().height(50.dp)
         ) {
-            Text(
-                text = "MEU ÁLBUM",
-                fontWeight = FontWeight.Bold
-            )
+            Text("MEU ÁLBUM", fontWeight = FontWeight.Bold)
         }
 
         Spacer(modifier = Modifier.height(30.dp))
 
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            HorizontalDivider(
-                modifier = Modifier.weight(1f),
-                color = Color.DarkGray
-            )
-
-            Text(
-                text = " SELECTIONS ",
-                color = Color.Gray,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            HorizontalDivider(
-                modifier = Modifier.weight(1f),
-                color = Color.DarkGray
-            )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            HorizontalDivider(modifier = Modifier.weight(1f), color = Color.DarkGray)
+            Text(" SELECTIONS ", color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            HorizontalDivider(modifier = Modifier.weight(1f), color = Color.DarkGray)
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Seleções vindas do catálogo único via ViewModel
         LazyColumn(
             verticalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier.padding(bottom = 24.dp)
@@ -304,25 +208,20 @@ fun HomeScreen(
                     shieldUrl = selection.imageUrl,
                     color = selectionColor(selection.teamId),
                     index = index,
-                    onClick = {
-                        onSelectionClick(
-                            selection.teamId
-                        )
-                    }
+                    onClick = { onSelectionClick(selection.teamId) }
                 )
             }
         }
     }
 }
 
-/** Cor de marca de cada seleção. Fica na UI porque é decisão visual, não dado. */
-private fun selectionColor(
-    teamId: Int
-): Color = when (teamId) {
+fun selectionColor(teamId: Int): Color = when (teamId) {
     1 -> BrazilGreen
     2 -> ArgentinaBlue
     3 -> FranceBlue
     4 -> PortugalRed
+    5 -> Color(0xFFE42518)  // Spain
+    6 -> Color(0xFF1D428A)  // Netherlands
     else -> WorldCupGold
 }
 
@@ -334,38 +233,17 @@ fun AnimatedSelectionItem(
     index: Int,
     onClick: () -> Unit
 ) {
-    var visible by remember {
-        mutableStateOf(false)
-    }
-
-    LaunchedEffect(Unit) {
-        visible = true
-    }
+    var visible by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { visible = true }
 
     AnimatedVisibility(
         visible = visible,
         enter = slideInVertically(
-            initialOffsetY = {
-                50 * (index + 1)
-            },
-            animationSpec = tween(
-                durationMillis = 500,
-                delayMillis = 100 * index
-            )
-        ) + fadeIn(
-            animationSpec = tween(
-                500,
-                delayMillis = 100 * index
-            )
-        )
+            initialOffsetY = { 50 * (index + 1) },
+            animationSpec = tween(500, delayMillis = 100 * index)
+        ) + fadeIn(animationSpec = tween(500, delayMillis = 100 * index))
     ) {
-        SelectionItem(
-            name = name,
-            shieldUrl = shieldUrl,
-            color = color,
-            titles = if (index == 3) 0 else 5 - index,
-            onClick = onClick
-        )
+        SelectionItem(name = name, shieldUrl = shieldUrl, color = color, onClick = onClick)
     }
 }
 
@@ -374,7 +252,6 @@ fun SelectionItem(
     name: String,
     shieldUrl: String,
     color: Color,
-    titles: Int,
     onClick: () -> Unit
 ) {
     Surface(
@@ -384,79 +261,28 @@ fun SelectionItem(
         onClick = onClick
     ) {
         Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
+            modifier = Modifier.padding(16.dp).fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = Modifier
                     .size(70.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(
-                        Brush.verticalGradient(
-                            listOf(
-                                color,
-                                color.copy(alpha = 0.5f)
-                            )
-                        )
-                    ),
+                    .background(Brush.verticalGradient(listOf(color, color.copy(alpha = 0.5f)))),
                 contentAlignment = Alignment.Center
             ) {
                 SubcomposeAsyncImage(
                     model = shieldUrl,
                     contentDescription = name,
                     modifier = Modifier.size(50.dp),
-                    loading = {
-                        CircularProgressIndicator(
-                            color = Color.White,
-                            modifier = Modifier.size(20.dp),
-                            strokeWidth = 2.dp
-                        )
-                    }
+                    loading = { CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp), strokeWidth = 2.dp) }
                 )
             }
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    text = name,
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp
-                )
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    if (titles > 0) {
-                        repeat(titles) {
-                            Icon(
-                                imageVector = Icons.Default.Star,
-                                contentDescription = null,
-                                modifier = Modifier.size(16.dp),
-                                tint = WorldCupYellow
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.width(4.dp))
-
-                        Text(
-                            text = "$titles titles",
-                            color = Color.Gray,
-                            fontSize = 11.sp
-                        )
-                    } else {
-                        Text(
-                            text = "Hunting for 1st title",
-                            color = Color.Gray,
-                            fontSize = 11.sp
-                        )
-                    }
-                }
+            Column(modifier = Modifier.weight(1f)) {
+                Text(name, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
             }
 
             Icon(
@@ -468,19 +294,10 @@ fun SelectionItem(
     }
 }
 
-@Preview(
-    showBackground = true,
-    backgroundColor = 0xFF0B1226
-)
+@Preview(showBackground = true, backgroundColor = 0xFF0B1226)
 @Composable
 private fun SelectionItemPreview() {
     FigurinhaTheme {
-        SelectionItem(
-            name = "Brasil",
-            shieldUrl = "",
-            color = BrazilGreen,
-            titles = 5,
-            onClick = {}
-        )
+        SelectionItem(name = "Brasil", shieldUrl = "", color = BrazilGreen, onClick = {})
     }
 }

@@ -9,42 +9,42 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
 import coil.compose.SubcomposeAsyncImage
+import com.album.figurinha.model.Coach
 import com.album.figurinha.model.StickerRarity
 import com.album.figurinha.ui.theme.*
+import com.album.figurinha.viewmodel.DataViewModel
 
 @Composable
-fun CoachDetailScreen(coachId: Int, onBack: () -> Unit) {
-    val coachName = when (coachId) {
-        1 -> "Carlo Ancelotti"
-        2 -> "Lionel Scaloni"
-        else -> "Didier Deschamps"
+fun CoachDetailScreen(
+    coachId: Int,
+    dataViewModel: DataViewModel,
+    onBack: () -> Unit
+) {
+    // Procura o coach em todos os times carregados
+    val allTeams = dataViewModel.state.value.teams
+    val coachEntry = remember(coachId, allTeams) {
+        allTeams.firstNotNullOfOrNull { team ->
+            team.coach?.takeIf { it.id == coachId }?.let { it to team }
+        }
     }
-    val teamName = when(coachId) {
-        1 -> "BRASIL"
-        2 -> "ARGENTINA"
-        else -> "FRANÇA"
-    }
-    val teamColor = when(coachId) {
-        1 -> BrazilGreen
-        2 -> ArgentinaBlue
-        else -> FranceBlue
-    }
-    val coachPhoto = when(coachId) {
-        1 -> "https://media.api-sports.io/football/coachs/2.png"
-        2 -> "https://media.api-sports.io/football/coachs/18.png"
-        else -> "https://media.api-sports.io/football/coachs/10.png"
-    }
+    val coach = coachEntry?.first
+    val team = coachEntry?.second
+
+    val coachName = coach?.name ?: "Técnico"
+    val teamName = team?.name?.uppercase() ?: "SELEÇÃO"
+    val teamColor = if (team != null) resolveTeamColor(team.id) else WorldCupGold
+    val coachPhoto = coach?.photo ?: ""
 
     Column(
         modifier = Modifier
@@ -57,22 +57,24 @@ fun CoachDetailScreen(coachId: Int, onBack: () -> Unit) {
                 .fillMaxWidth()
                 .height(300.dp)
         ) {
-            SubcomposeAsyncImage(
-                model = coachPhoto,
-                contentDescription = null,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop,
-                loading = { Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() } }
-            )
-            
+            if (coachPhoto.isNotEmpty()) {
+                SubcomposeAsyncImage(
+                    model = coachPhoto,
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop,
+                    loading = {
+                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator()
+                        }
+                    }
+                )
+            }
+
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(
-                        Brush.verticalGradient(
-                            listOf(Color.Transparent, DarkBlueBg)
-                        )
-                    )
+                    .background(Brush.verticalGradient(listOf(Color.Transparent, DarkBlueBg)))
             )
 
             IconButton(
@@ -96,14 +98,13 @@ fun CoachDetailScreen(coachId: Int, onBack: () -> Unit) {
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Column {
-                    Text(text = coachName, fontSize = 32.sp, fontWeight = FontWeight.Black, color = Color.White)
-                    Text(text = "TREINADOR · $teamName", color = WorldCupYellow, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                    Text(coachName, fontSize = 32.sp, fontWeight = FontWeight.Black, color = Color.White)
+                    Text("TREINADOR · $teamName", color = WorldCupYellow, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                 }
             }
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Coaching Rarity Badge (Black)
             Surface(
                 color = StickerRarity.COACHING.color,
                 shape = RoundedCornerShape(12.dp),
@@ -114,29 +115,35 @@ fun CoachDetailScreen(coachId: Int, onBack: () -> Unit) {
                     Box(modifier = Modifier.size(32.dp).background(teamColor, RoundedCornerShape(4.dp)))
                     Spacer(modifier = Modifier.width(16.dp))
                     Column {
-                        Text(text = "Figurinha Corpo Técnico", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                        Text(text = "Raridade Exclusiva · $teamName", color = Color.Gray, fontSize = 10.sp)
+                        Text("Figurinha Corpo Técnico", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        Text("Raridade Exclusiva · $teamName", color = Color.Gray, fontSize = 10.sp)
                     }
                 }
             }
 
             Spacer(modifier = Modifier.height(32.dp))
-            Text(text = "TÍTULOS", color = Color.Gray, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+            Text("INFORMAÇÕES", color = Color.Gray, fontWeight = FontWeight.Bold, fontSize = 12.sp)
             Spacer(modifier = Modifier.height(16.dp))
 
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                TrophyStat("1x", "COPA", Modifier.weight(1f))
-                TrophyStat(if (coachId == 2) "2x" else "0x", "AMÉRICA", Modifier.weight(1f))
-                TrophyStat(if (coachId == 2) "1x" else "0x", "FINALÍSS.", Modifier.weight(1f))
+            if (coach != null) {
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    CoachStatCard(coach.description.ifEmpty { "-" }, "NACIONALIDADE", Modifier.weight(1f))
+                    CoachStatCard("TREINADOR", "CARGO", Modifier.weight(1f))
+                }
+            } else {
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    CoachStatCard("-", "NACIONALIDADE", Modifier.weight(1f))
+                    CoachStatCard("-", "CARGO", Modifier.weight(1f))
+                }
             }
-            
+
             Spacer(modifier = Modifier.height(40.dp))
         }
     }
 }
 
 @Composable
-fun TrophyStat(value: String, label: String, modifier: Modifier = Modifier) {
+private fun CoachStatCard(value: String, label: String, modifier: Modifier = Modifier) {
     Surface(
         modifier = modifier.height(90.dp),
         color = Color.White.copy(alpha = 0.05f),
@@ -147,8 +154,8 @@ fun TrophyStat(value: String, label: String, modifier: Modifier = Modifier) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Text(text = value, fontSize = 24.sp, fontWeight = FontWeight.Black, color = Color.White)
-            Text(text = label, fontSize = 10.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
+            Text(value, fontSize = 24.sp, fontWeight = FontWeight.Black, color = Color.White)
+            Text(label, fontSize = 10.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
         }
     }
 }

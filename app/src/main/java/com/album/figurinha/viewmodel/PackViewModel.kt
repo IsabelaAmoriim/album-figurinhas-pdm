@@ -5,10 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.album.figurinha.model.Figurinha
 import com.album.figurinha.model.PacoteFigurinha
 import com.album.figurinha.model.Player
-import com.album.figurinha.model.StickerRarity
 import com.album.figurinha.repository.FootballRepository
-import com.album.figurinha.repository.PlayersData
-import com.album.figurinha.util.StickerImageResolver
+import com.album.figurinha.repository.StickerCatalog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,10 +16,12 @@ import java.time.LocalDateTime
 
 data class DrawnSticker(
     val player: Player,
-    val rarity: StickerRarity
+    val rarity: com.album.figurinha.model.StickerRarity
 )
 
-class PackViewModel(private val repository: FootballRepository = FootballRepository()) : ViewModel() {
+class PackViewModel(
+    private val repository: FootballRepository = FootballRepository()
+) : ViewModel() {
     private val _newStickers = MutableStateFlow<List<DrawnSticker>>(emptyList())
     val newStickers: StateFlow<List<DrawnSticker>> = _newStickers.asStateFlow()
 
@@ -39,7 +39,6 @@ class PackViewModel(private val repository: FootballRepository = FootballReposit
     }
 
     fun openPack(walletViewModel: WalletViewModel, albumViewModel: AlbumViewModel? = null): Boolean {
-        // 1. Verificação de saldo
         if (!canAffordPack(walletViewModel)) {
             _errorMessage.value = "Saldo insuficiente para comprar pacote! Requer $PACK_PRICE moedas."
             return false
@@ -47,38 +46,14 @@ class PackViewModel(private val repository: FootballRepository = FootballReposit
 
         _errorMessage.value = null
 
-        // 2. Desconto das moedas
         if (walletViewModel.spendCoins(PACK_PRICE)) {
             _isOpening.value = true
             viewModelScope.launch(Dispatchers.IO) {
                 try {
-                    println("PackViewModel: Attempting to fetch teams from API...")
-                    val response = repository.getTeams()
-                    val teams = response.response.map { it.team }
-                    
-                    val players = mutableListOf<Player>()
-                    repeat(5) {
-                        val randomTeam = teams.random()
-                        val teamPlayers = repository.getPlayers(randomTeam.id).response.map { it.player }
-                        if (teamPlayers.isNotEmpty()) {
-                            val p = teamPlayers.random()
-                            val rarity = PlayersData.getRarityForPlayer(p.id)
-                            players.add(p.copy(
-                                photo = StickerImageResolver.getPlayerImageUrl(p.id, p.photo),
-                                rarity = rarity
-                            ))
-                        }
-                    }
-                    
-                    if (players.size < 5) {
-                        val fallback = PlayersData.allPlayers
-                        players.addAll(fallback.take(5 - players.size))
-                    }
-                    
-                    val drawn = players.shuffled().map { p ->
-                        val rarity = PlayersData.getRarityForPlayer(p.id)
-                        val updatedPlayer = p.copy(rarity = rarity)
-                        DrawnSticker(updatedPlayer, rarity)
+                    val drawn = (1..5).map {
+                        val catalogSticker = StickerCatalog.randomSticker()
+                        val player = catalogSticker.toPlayer()
+                        DrawnSticker(player, player.rarity)
                     }
 
                     val pacote = PacoteFigurinha(
@@ -95,38 +70,30 @@ class PackViewModel(private val repository: FootballRepository = FootballReposit
                             )
                         }
                     )
-                    
+
                     _currentPack.value = pacote
                     _newStickers.value = drawn
 
-                    // Adiciona automaticamente as figurinhas sorteadas ao álbum do usuário
                     albumViewModel?.addStickers(drawn.map { Pair(it.player.id, it.rarity) })
 
                 } catch (e: Exception) {
-                    println("PackViewModel: API Error: ${e.message}. Using fallback data.")
-                    val fallback = PlayersData.allPlayers
-                    val drawn = fallback.shuffled().map { p ->
-                        DrawnSticker(p, p.rarity)
-                    }
-                    val pacote = PacoteFigurinha(
-                        id = (1..100000).random(),
-                        openDate = LocalDateTime.now(),
-                        stickers = drawn.map { d ->
-                            Figurinha(
-                                id = d.player.id,
-                                name = d.player.name,
-                                image = d.player.photo,
-                                rarity = d.rarity.ordinal,
-                                playerId = d.player.id,
-                                teamId = d.player.teamId
-                            )
+                    // Fallback: se o catalogo ainda nao carregou, usa os stickers disponiveis
+                    val fallback = StickerCatalog.allStickers
+                    if (fallback.isNotEmpty()) {
+                        val drawn = (1..5).map {
+                            val s = fallback.random()
+                            DrawnSticker(s.toPlayer(), s.rarity)
                         }
-                    )
-                    _currentPack.value = pacote
-                    _newStickers.value = drawn
-
-                    // Adiciona automaticamente as figurinhas sorteadas ao álbum do usuário
-                    albumViewModel?.addStickers(drawn.map { Pair(it.player.id, it.rarity) })
+                        _currentPack.value = PacoteFigurinha(
+                            id = (1..100000).random(),
+                            openDate = LocalDateTime.now(),
+                            stickers = drawn.map { Figurinha(it.player.id, it.player.name, it.player.photo, it.rarity.ordinal, it.player.id, it.player.teamId) }
+                        )
+                        _newStickers.value = drawn
+                        albumViewModel?.addStickers(drawn.map { Pair(it.player.id, it.rarity) })
+                    } else {
+                        _errorMessage.value = "Erro ao abrir pacote: ${e.message}"
+                    }
                 } finally {
                     _isOpening.value = false
                 }
@@ -137,7 +104,7 @@ class PackViewModel(private val repository: FootballRepository = FootballReposit
             return false
         }
     }
-    
+
     fun clearNewStickers() {
         _newStickers.value = emptyList()
         _currentPack.value = null
