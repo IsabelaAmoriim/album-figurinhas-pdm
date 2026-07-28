@@ -26,8 +26,7 @@ interface FootballApi {
     @GET("coachs")
     suspend fun getCoach(
         @Header("x-apisports-key") apiKey: String,
-        @Query("team") team: Int,
-        @Query("season") season: Int
+        @Query("team") team: Int
     ): CoachResponseDto
 
     @GET("players")

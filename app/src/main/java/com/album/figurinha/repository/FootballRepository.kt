@@ -17,7 +17,7 @@ open class FootballRepository {
     private val apiKey = "91903e3ddef0863948844da8643d20c9"
     private val worldCupLeagueId = 1
     private val worldCupSeason = 2022
-    private val selectedTeams = setOf(6, 9, 8) // Brasil (6), Argentina (9), Espanha (8)
+    private val selectedTeams = setOf(6, 8, 9) // Brasil (6), Argentina (8), Espanha (9)
 
     private var teamsCache: List<Team>? = null
     private var playersCache: MutableMap<Int, List<Player>> = mutableMapOf()
@@ -105,7 +105,7 @@ open class FootballRepository {
 
         return try {
             val response = withContext(Dispatchers.IO) {
-                api.getCoach(apiKey = apiKey, team = teamId, season = worldCupSeason)
+                api.getCoach(apiKey = apiKey, team = teamId)
             }
             val coach = response.response.firstOrNull()?.let {
                 CoachMapper.fromDto(it, teamId)

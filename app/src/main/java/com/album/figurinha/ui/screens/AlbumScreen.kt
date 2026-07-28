@@ -463,19 +463,17 @@ private fun RepeatedTab(
 private fun teamColorFor(
     teamId: Int
 ): Color = when (teamId) {
-    1 -> BrazilGreen
-    2 -> ArgentinaBlue
-    3 -> FranceBlue
-    4 -> PortugalRed
+    6 -> BrazilGreen
+    8 -> ArgentinaBlue
+    9 -> SpainRed
     else -> WorldCupGold
 }
 
 private fun teamDisplayName(
     teamId: Int
 ): String = when (teamId) {
-    1 -> "Brasil"
-    2 -> "Argentina"
-    3 -> "França"
-    4 -> "Portugal"
+    6 -> "Brasil"
+    8 -> "Argentina"
+    9 -> "Espanha"
     else -> "—"
 }

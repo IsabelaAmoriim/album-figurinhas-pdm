@@ -243,17 +243,15 @@ fun SelectionDetailScreen(
 }
 
 fun resolveTeamColor(teamId: Int): Color = when (teamId) {
-    1 -> BrazilGreen
-    2 -> ArgentinaBlue
-    3 -> FranceBlue
-    4 -> PortugalRed
+    6 -> BrazilGreen
+    8 -> ArgentinaBlue
+    9 -> SpainRed
     else -> WorldCupGold
 }
 
 fun resolveCountryCode(teamId: Int): String = when (teamId) {
-    1 -> "br"
-    2 -> "ar"
-    3 -> "fr"
-    4 -> "pt"
+    6 -> "br"
+    8 -> "ar"
+    9 -> "es"
     else -> "un"
 }

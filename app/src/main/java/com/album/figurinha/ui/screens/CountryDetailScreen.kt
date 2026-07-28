@@ -20,14 +20,17 @@ import androidx.compose.ui.unit.sp
 import coil.compose.SubcomposeAsyncImage
 import com.album.figurinha.model.Player
 import com.album.figurinha.model.StickerRarity
+import com.album.figurinha.repository.StickerCatalog
 import com.album.figurinha.ui.components.StickerCard
 import com.album.figurinha.ui.theme.*
+import com.album.figurinha.viewmodel.AlbumViewModel
 import com.album.figurinha.viewmodel.DataViewModel
 
 @Composable
 fun CountryDetailScreen(
     teamId: Int,
     dataViewModel: DataViewModel,
+    albumViewModel: AlbumViewModel,
     onBack: () -> Unit
 ) {
     val team = dataViewModel.getTeamById(teamId)
@@ -38,8 +41,11 @@ fun CountryDetailScreen(
     val players = dataViewModel.getPlayersForTeam(teamId)
     val playerCount = players.size
 
+    val stickerId = StickerCatalog.selectionStickerId(teamId)
+    val isCollected = albumViewModel.isCollected(stickerId)
+
     val countrySticker = Player(
-        id = 999 + teamId,
+        id = stickerId,
         name = teamName,
         photo = resolvedFlag,
         number = teamId,
@@ -114,7 +120,7 @@ fun CountryDetailScreen(
             Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                 StickerCard(
                     player = countrySticker,
-                    isCollected = true,
+                    isCollected = isCollected,
                     rarity = StickerRarity.MYTHIC,
                     teamColor = teamColor,
                     modifier = Modifier.graphicsLayer(scaleX = 1.05f, scaleY = 1.05f)

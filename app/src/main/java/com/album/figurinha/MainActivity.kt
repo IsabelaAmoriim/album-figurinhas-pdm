@@ -234,6 +234,7 @@ fun MainNavigation(networkStatus: ConnectivityObserver.Status) {
                 CountryDetailScreen(
                     teamId = teamId,
                     dataViewModel = dataViewModel,
+                    albumViewModel = albumViewModel,
                     onBack = { navController.popBackStack() }
                 )
             }

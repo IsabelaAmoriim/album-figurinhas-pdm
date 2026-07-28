@@ -19,17 +19,15 @@ object StickerImageResolver {
     )
 
     private val teamToSoFifaMap = mapOf(
-        1 to "1370", // Brazil
-        2 to "1369", // Argentina
-        3 to "1335", // France
-        4 to "1354", // Portugal
+        6 to "1370", // Brazil
+        8 to "1369", // Argentina
+        9 to "1362", // Spain
     )
 
     private val teamToIsoMap = mapOf(
-        1 to "br",
-        2 to "ar",
-        3 to "fr",
-        4 to "pt"
+        6 to "br",
+        8 to "ar",
+        9 to "es"
     )
 
     fun getPlayerImageUrl(playerId: Int, originalUrl: String): String {

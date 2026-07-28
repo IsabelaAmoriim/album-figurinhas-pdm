@@ -1,36 +1,52 @@
-# Improve Image Resolution and Add Country Assets
+# Implementation Plan - Fix Coach Request, Country Icon, and Country Sticker
 
-This plan aims to improve the visual quality of stickers and logos, fix missing team assets, add country flags, and refine the locked player silhouette.
+## Goal Description
+1.  **Remove `season` from Coach Request**: The API for coaches doesn't seem to strictly require `season` or it's causing issues. Removing it to see if it improves data fetching for the coach photo and info.
+2.  **Fix Country Page Icon**: Correct the ID mismatch in `resolveCountryCode` and `resolveTeamColor` to ensure flags and colors load for the selected teams (Brasil, Argentina, Espanha).
+3.  **Fix Country Sticker Saving**: Ensure the country sticker in `CountryDetailScreen` uses the correct ID from the catalog and reflects the actual collection status from `AlbumViewModel`.
+
+## User Review Required
+> [!IMPORTANT]
+> I am updating the team ID mappings for Brasil, Argentina, and Espanha to match the API IDs (6, 9, 8) used in the repository. I will also add a specific red color for Spain.
 
 ## Proposed Changes
 
-### [Util]
-#### [MODIFY] [StickerImageResolver.kt](file:///C:/Users/costa/StudioProjects/album-figurinhas-pdm/app/src/main/java/com/album/figurinha/util/StickerImageResolver.kt)
-- Add a mapping for country codes (BR, AR, FR, PT).
-- Add `getCountryFlagUrl(teamId: Int)` to return high-resolution flag URLs (`@3x.png`).
-- Update `getTeamShieldUrl` to use `https://cdn.sofifa.net/teams/{id}/120.png` for better resolution and reliability.
-- Ensure player images continue using the best available headshot origin.
+### API & Repository
 
-### [UI Components]
-#### [MODIFY] [StickerCard.kt](file:///C:/Users/costa/StudioProjects/album-figurinhas-pdm/app/src/main/java/com/album/figurinha/ui/components/StickerCard.kt)
-- Redesign the silhouette effect: instead of a darkened photo, use a solid dark-gray color filter that preserves only the alpha channel (masking effect) if possible, or a very aggressive black-out filter to create a pure silhouette.
-- Ensure the silhouette looks clean and consistent.
+#### [MODIFY] [FootballApi.kt](file:///C:/Users/costa/StudioProjects/album-figurinhas-pdm/app/src/main/java/com/album/figurinha/api/FootballApi.kt)
+- Remove `season` query parameter from `getCoach` function.
 
-### [UI Screens]
-#### [MODIFY] [CountryDetailScreen.kt](file:///C:/Users/costa/StudioProjects/album-figurinhas-pdm/app/src/main/java/com/album/figurinha/ui/screens/CountryDetailScreen.kt)
-- Replace the text-based circular icon (e.g., "BR") with the actual country flag image.
-- Use the high-resolution flag in the Mythic sticker for each selection.
+#### [MODIFY] [FootballRepository.kt](file:///C:/Users/costa/StudioProjects/album-figurinhas-pdm/app/src/main/java/com/album/figurinha/repository/FootballRepository.kt)
+- Remove `season` argument in the call to `api.getCoach`.
 
-#### [MODIFY] [HomeScreen.kt](file:///C:/Users/costa/StudioProjects/album-figurinhas-pdm/app/src/main/java/com/album/figurinha/ui/screens/HomeScreen.kt)
-- Ensure the team selection items use the updated high-resolution shield URLs.
+### UI & Utilities
+
+#### [MODIFY] [Color.kt](file:///C:/Users/costa/StudioProjects/album-figurinhas-pdm/app/src/main/java/com/album/figurinha/ui/theme/Color.kt)
+- Add `SpainRed` color.
 
 #### [MODIFY] [SelectionDetailScreen.kt](file:///C:/Users/costa/StudioProjects/album-figurinhas-pdm/app/src/main/java/com/album/figurinha/ui/screens/SelectionDetailScreen.kt)
-- Verify that the team shield in the header is using the 120px version for maximum clarity.
+- Update `resolveTeamColor` to handle team IDs 6, 9, 8.
+- Update `resolveCountryCode` to handle team IDs 6, 9, 8.
+
+#### [MODIFY] [StickerImageResolver.kt](file:///C:/Users/costa/StudioProjects/album-figurinhas-pdm/app/src/main/java/com/album/figurinha/util/StickerImageResolver.kt)
+- Update `teamToSoFifaMap` and `teamToIsoMap` to use the correct team IDs (6, 9, 8).
+
+#### [MODIFY] [CountryDetailScreen.kt](file:///C:/Users/costa/StudioProjects/album-figurinhas-pdm/app/src/main/java/com/album/figurinha/ui/screens/CountryDetailScreen.kt)
+- Update parameters to accept `albumViewModel: AlbumViewModel`.
+- Use `StickerCatalog.selectionStickerId(teamId)` for the sticker ID.
+- Check `albumViewModel.isCollected(stickerId)` for `isCollected` parameter in `StickerCard`.
+
+#### [MODIFY] [MainActivity.kt](file:///C:/Users/costa/StudioProjects/album-figurinhas-pdm/app/src/main/java/com/album/figurinha/MainActivity.kt)
+- Pass `albumViewModel` to `CountryDetailScreen` in the navigation graph.
 
 ## Verification Plan
 
+### Automated Tests
+- Build project to verify no compilation errors.
+
 ### Manual Verification
-- **Flags**: Open the "About Country" screen for each selection and verify the flag appears in the header and on the Mythic sticker.
-- **Resolution**: Check the Brazil/Argentina shields on the Home and Selection screens to ensure they are crisp.
-- **Silhouettes**: Verify that locked players (like Neymar in the current mock) appear as solid dark gray silhouettes.
-- **Logos**: Verify that France and Portugal logos now appear correctly if they were missing before.
+- Deploy the app.
+- Open Selection Detail and then Country Detail for Brasil/Argentina/Espanha.
+- Verify flag icon is visible in the header.
+- Verify the "Mythic Collectible" reflects ownership (colored if owned, grayed out if not).
+- Verify coach image loads if returned by API.

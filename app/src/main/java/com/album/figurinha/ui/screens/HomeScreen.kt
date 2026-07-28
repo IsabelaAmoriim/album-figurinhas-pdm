@@ -216,12 +216,9 @@ fun HomeScreen(
 }
 
 fun selectionColor(teamId: Int): Color = when (teamId) {
-    1 -> BrazilGreen
-    2 -> ArgentinaBlue
-    3 -> FranceBlue
-    4 -> PortugalRed
-    5 -> Color(0xFFE42518)  // Spain
-    6 -> Color(0xFF1D428A)  // Netherlands
+    6 -> BrazilGreen
+    8 -> ArgentinaBlue
+    9 -> SpainRed
     else -> WorldCupGold
 }
 
