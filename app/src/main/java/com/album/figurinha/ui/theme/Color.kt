@@ -22,3 +22,12 @@ val BrazilGreen = Color(0xFF009739)
 val ArgentinaBlue = Color(0xFF75AADB)
 val FranceBlue = Color(0xFF002395)
 val FranceRed = Color(0xFFED2939)
+val PortugalRed = Color(0xFFE42518)
+
+// Cor clara usada nas telas de detalhe (SelectionDetail,
+// CountryDetail, PlayerDetail) e agora também no álbum.
+val LightSheet = Color(0xFFF5F5F5)
+val LightSheetCard = Color(0xFFFFFFFF)
+val TextOnLightPrimary = Color(0xFF1A1A1A)
+val TextOnLightSecondary = Color(0xFF6B6B6B)
+val LightSheetDivider = Color(0xFFE0E0E0)

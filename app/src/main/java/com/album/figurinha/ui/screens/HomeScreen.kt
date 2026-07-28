@@ -18,31 +18,29 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
 import coil.compose.SubcomposeAsyncImage
+import com.album.figurinha.model.CatalogSticker
 import com.album.figurinha.ui.components.CoinWallet
 import com.album.figurinha.ui.theme.*
 import com.album.figurinha.util.ConnectivityObserver
-import com.album.figurinha.util.StickerImageResolver
+import com.album.figurinha.viewmodel.AlbumProgress
 
 @Composable
 fun HomeScreen(
-    balance: Int, 
-    collectedCount: Int = 0,
-    totalCount: Int = 20,
+    balance: Int,
+    progress: AlbumProgress,
+    selections: List<CatalogSticker>,
     recompensasDisponiveis: Boolean = false,
     onClaimReward: () -> Unit = {},
     networkStatus: ConnectivityObserver.Status,
-    onSelectionClick: (Int) -> Unit, 
-    onStoreClick: () -> Unit
+    onSelectionClick: (Int) -> Unit,
+    onStoreClick: () -> Unit,
+    onAlbumClick: () -> Unit
 ) {
-    val progressFloat = if (totalCount > 0) (collectedCount.toFloat() / totalCount).coerceIn(0f, 1f) else 0f
-    val progressPercentage = (progressFloat * 100).toInt()
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -56,26 +54,39 @@ fun HomeScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
                     text = "FIFA",
                     color = WorldCupYellow,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 2.sp
                 )
+
                 Spacer(modifier = Modifier.width(8.dp))
+
                 // Discrete Connectivity Dot
                 Box(
                     modifier = Modifier
                         .size(8.dp)
                         .clip(CircleShape)
                         .background(
-                            if (networkStatus == ConnectivityObserver.Status.Available) Color.Green 
-                            else Color.Red
+                            if (
+                                networkStatus ==
+                                ConnectivityObserver.Status.Available
+                            ) {
+                                Color.Green
+                            } else {
+                                Color.Red
+                            }
                         )
                 )
             }
-            CoinWallet(balance = balance)
+
+            CoinWallet(
+                balance = balance
+            )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -85,7 +96,10 @@ fun HomeScreen(
                 color = CardBackground,
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.fillMaxWidth(),
-                border = androidx.compose.foundation.BorderStroke(1.dp, WorldCupGold)
+                border = androidx.compose.foundation.BorderStroke(
+                    1.dp,
+                    WorldCupGold
+                )
             ) {
                 Row(
                     modifier = Modifier
@@ -94,50 +108,93 @@ fun HomeScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         Icon(
                             imageVector = Icons.Default.Star,
                             contentDescription = null,
                             tint = WorldCupYellow,
                             modifier = Modifier.size(24.dp)
                         )
+
                         Spacer(modifier = Modifier.width(10.dp))
+
                         Column {
-                            Text(text = "Recompensa Diária", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                            Text(text = "+50 moedas grátis!", color = Color.Gray, fontSize = 12.sp)
+                            Text(
+                                text = "Recompensa Diária",
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.sp
+                            )
+
+                            Text(
+                                text = "+50 moedas grátis!",
+                                color = Color.Gray,
+                                fontSize = 12.sp
+                            )
                         }
                     }
+
                     Button(
                         onClick = onClaimReward,
-                        colors = ButtonDefaults.buttonColors(containerColor = WorldCupYellow),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = WorldCupYellow
+                        ),
                         shape = RoundedCornerShape(8.dp),
-                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
+                        contentPadding = PaddingValues(
+                            horizontal = 12.dp,
+                            vertical = 4.dp
+                        )
                     ) {
-                        Text(text = "RESGATAR", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        Text(
+                            text = "RESGATAR",
+                            color = Color.Black,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.sp
+                        )
                     }
                 }
             }
+
             Spacer(modifier = Modifier.height(16.dp))
         }
 
-        // Progress Bar Global
+        // Progress Bar Global - valores já calculados no AlbumViewModel
         Surface(
             modifier = Modifier.fillMaxWidth(),
             color = CardBackground,
             shape = RoundedCornerShape(12.dp)
         ) {
-            Column(modifier = Modifier.padding(12.dp)) {
+            Column(
+                modifier = Modifier.padding(12.dp)
+            ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(text = "Collection Progress", color = Color.White, fontSize = 12.sp)
-                    Text(text = "$progressPercentage% ($collectedCount/$totalCount)", color = WorldCupGold, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                    Text(
+                        text = "Collection Progress",
+                        color = Color.White,
+                        fontSize = 12.sp
+                    )
+
+                    Text(
+                        text = "${progress.percentage}% (${progress.collected}/${progress.total})",
+                        color = WorldCupGold,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 12.sp
+                    )
                 }
+
                 Spacer(modifier = Modifier.height(8.dp))
+
                 LinearProgressIndicator(
-                    progress = { progressFloat },
-                    modifier = Modifier.fillMaxWidth().height(6.dp).clip(CircleShape),
+                    progress = { progress.fraction },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(6.dp)
+                        .clip(CircleShape),
                     color = WorldCupGold,
                     trackColor = Color.DarkGray
                 )
@@ -152,6 +209,7 @@ fun HomeScreen(
             fontSize = 32.sp,
             fontWeight = FontWeight.Black
         )
+
         Surface(
             color = WorldCupYellow,
             shape = RoundedCornerShape(12.dp),
@@ -159,7 +217,10 @@ fun HomeScreen(
         ) {
             Text(
                 text = "2026",
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp),
+                modifier = Modifier.padding(
+                    horizontal = 12.dp,
+                    vertical = 2.dp
+                ),
                 fontWeight = FontWeight.Bold,
                 color = Color.Black
             )
@@ -169,57 +230,114 @@ fun HomeScreen(
 
         Button(
             onClick = onStoreClick,
-            colors = ButtonDefaults.buttonColors(containerColor = WorldCupYellow),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = WorldCupYellow
+            ),
             shape = RoundedCornerShape(12.dp),
-            modifier = Modifier.fillMaxWidth().height(50.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp)
         ) {
-            Text(text = "GET STICKER PACKS", color = Color.Black, fontWeight = FontWeight.Bold)
+            Text(
+                text = "GET STICKER PACKS",
+                color = Color.Black,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Acesso ao álbum (issue #8)
+        OutlinedButton(
+            onClick = onAlbumClick,
+            shape = RoundedCornerShape(12.dp),
+            border = androidx.compose.foundation.BorderStroke(
+                1.dp,
+                WorldCupGold
+            ),
+            colors = ButtonDefaults.outlinedButtonColors(
+                contentColor = WorldCupGold
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp)
+        ) {
+            Text(
+                text = "MEU ÁLBUM",
+                fontWeight = FontWeight.Bold
+            )
         }
 
         Spacer(modifier = Modifier.height(30.dp))
 
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            HorizontalDivider(modifier = Modifier.weight(1f), color = Color.DarkGray)
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            HorizontalDivider(
+                modifier = Modifier.weight(1f),
+                color = Color.DarkGray
+            )
+
             Text(
                 text = " SELECTIONS ",
                 color = Color.Gray,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold
             )
-            HorizontalDivider(modifier = Modifier.weight(1f), color = Color.DarkGray)
+
+            HorizontalDivider(
+                modifier = Modifier.weight(1f),
+                color = Color.DarkGray
+            )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        val selections = listOf(
-            Triple("Brasil", 1, BrazilGreen),
-            Triple("Argentina", 2, ArgentinaBlue),
-            Triple("França", 3, FranceBlue),
-            Triple("Portugal", 4, Color(0xFFE42518))
-        )
-
-        // Selections List with Entry Animations
+        // Seleções vindas do catálogo único via ViewModel
         LazyColumn(
             verticalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier.padding(bottom = 24.dp)
         ) {
-            itemsIndexed(selections) { index, item ->
-                val resolvedShield = StickerImageResolver.getTeamShieldUrl(item.second, "")
+            itemsIndexed(selections) { index, selection ->
                 AnimatedSelectionItem(
-                    name = item.first,
-                    shieldUrl = resolvedShield,
-                    color = item.third,
+                    name = selection.name,
+                    shieldUrl = selection.imageUrl,
+                    color = selectionColor(selection.teamId),
                     index = index,
-                    onClick = { onSelectionClick(item.second) }
+                    onClick = {
+                        onSelectionClick(
+                            selection.teamId
+                        )
+                    }
                 )
             }
         }
     }
 }
 
+/** Cor de marca de cada seleção. Fica na UI porque é decisão visual, não dado. */
+private fun selectionColor(
+    teamId: Int
+): Color = when (teamId) {
+    1 -> BrazilGreen
+    2 -> ArgentinaBlue
+    3 -> FranceBlue
+    4 -> PortugalRed
+    else -> WorldCupGold
+}
+
 @Composable
-fun AnimatedSelectionItem(name: String, shieldUrl: String, color: Color, index: Int, onClick: () -> Unit) {
-    var visible by remember { mutableStateOf(false) }
+fun AnimatedSelectionItem(
+    name: String,
+    shieldUrl: String,
+    color: Color,
+    index: Int,
+    onClick: () -> Unit
+) {
+    var visible by remember {
+        mutableStateOf(false)
+    }
+
     LaunchedEffect(Unit) {
         visible = true
     }
@@ -227,16 +345,38 @@ fun AnimatedSelectionItem(name: String, shieldUrl: String, color: Color, index: 
     AnimatedVisibility(
         visible = visible,
         enter = slideInVertically(
-            initialOffsetY = { 50 * (index + 1) },
-            animationSpec = tween(durationMillis = 500, delayMillis = 100 * index)
-        ) + fadeIn(animationSpec = tween(500, delayMillis = 100 * index))
+            initialOffsetY = {
+                50 * (index + 1)
+            },
+            animationSpec = tween(
+                durationMillis = 500,
+                delayMillis = 100 * index
+            )
+        ) + fadeIn(
+            animationSpec = tween(
+                500,
+                delayMillis = 100 * index
+            )
+        )
     ) {
-        SelectionItem(name, shieldUrl, color, if (index == 3) 0 else 5 - index, onClick)
+        SelectionItem(
+            name = name,
+            shieldUrl = shieldUrl,
+            color = color,
+            titles = if (index == 3) 0 else 5 - index,
+            onClick = onClick
+        )
     }
 }
 
 @Composable
-fun SelectionItem(name: String, shieldUrl: String, color: Color, titles: Int, onClick: () -> Unit) {
+fun SelectionItem(
+    name: String,
+    shieldUrl: String,
+    color: Color,
+    titles: Int,
+    onClick: () -> Unit
+) {
     Surface(
         color = CardBackground,
         shape = RoundedCornerShape(16.dp),
@@ -251,24 +391,47 @@ fun SelectionItem(name: String, shieldUrl: String, color: Color, titles: Int, on
         ) {
             Box(
                 modifier = Modifier
-                    .size(70.dp) // Increased size for the shield container
+                    .size(70.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(Brush.verticalGradient(listOf(color, color.copy(alpha = 0.5f)))),
+                    .background(
+                        Brush.verticalGradient(
+                            listOf(
+                                color,
+                                color.copy(alpha = 0.5f)
+                            )
+                        )
+                    ),
                 contentAlignment = Alignment.Center
             ) {
                 SubcomposeAsyncImage(
                     model = shieldUrl,
                     contentDescription = name,
-                    modifier = Modifier.size(50.dp), // Increased shield size
-                    loading = { CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp), strokeWidth = 2.dp) }
+                    modifier = Modifier.size(50.dp),
+                    loading = {
+                        CircularProgressIndicator(
+                            color = Color.White,
+                            modifier = Modifier.size(20.dp),
+                            strokeWidth = 2.dp
+                        )
+                    }
                 )
             }
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            Column(modifier = Modifier.weight(1f)) {
-                Text(text = name, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = name,
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp
+                )
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     if (titles > 0) {
                         repeat(titles) {
                             Icon(
@@ -278,10 +441,20 @@ fun SelectionItem(name: String, shieldUrl: String, color: Color, titles: Int, on
                                 tint = WorldCupYellow
                             )
                         }
+
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text(text = "$titles titles", color = Color.Gray, fontSize = 11.sp)
+
+                        Text(
+                            text = "$titles titles",
+                            color = Color.Gray,
+                            fontSize = 11.sp
+                        )
                     } else {
-                        Text(text = "Hunting for 1st title", color = Color.Gray, fontSize = 11.sp)
+                        Text(
+                            text = "Hunting for 1st title",
+                            color = Color.Gray,
+                            fontSize = 11.sp
+                        )
                     }
                 }
             }
@@ -292,5 +465,22 @@ fun SelectionItem(name: String, shieldUrl: String, color: Color, titles: Int, on
                 tint = Color.Gray
             )
         }
+    }
+}
+
+@Preview(
+    showBackground = true,
+    backgroundColor = 0xFF0B1226
+)
+@Composable
+private fun SelectionItemPreview() {
+    FigurinhaTheme {
+        SelectionItem(
+            name = "Brasil",
+            shieldUrl = "",
+            color = BrazilGreen,
+            titles = 5,
+            onClick = {}
+        )
     }
 }
