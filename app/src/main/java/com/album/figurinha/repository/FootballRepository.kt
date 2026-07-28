@@ -1,4 +1,4 @@
-package com.album.figurinha.repository
+ package com.album.figurinha.repository
 
 import com.album.figurinha.api.ApiClient
 import com.album.figurinha.api.CoachMapper
@@ -14,7 +14,7 @@ import kotlinx.coroutines.withContext
 
 open class FootballRepository {
     private val api by lazy { ApiClient.api }
-    private val apiKey = "9293fec2dcfdc7a871c3bb4389dede0b"
+    private val apiKey = "91903e3ddef0863948844da8643d20c9"
     private val worldCupLeagueId = 1
     private val worldCupSeason = 2022
     private val selectedTeams = setOf(6, 9, 8) // Brasil (6), Argentina (9), Espanha (8)
@@ -57,6 +57,7 @@ open class FootballRepository {
             api.getPlayersByTeamAndPage(
                 apiKey = apiKey,
                 team = teamId,
+                league = worldCupLeagueId,
                 season = worldCupSeason,
                 page = 1
             )
@@ -79,6 +80,7 @@ open class FootballRepository {
             api.getPlayersByTeamAndPage(
                 apiKey = apiKey,
                 team = teamId,
+                league = worldCupLeagueId,
                 season = worldCupSeason,
                 page = 1
             )
@@ -103,7 +105,7 @@ open class FootballRepository {
 
         return try {
             val response = withContext(Dispatchers.IO) {
-                api.getCoach(apiKey = apiKey, team = teamId)
+                api.getCoach(apiKey = apiKey, team = teamId, season = worldCupSeason)
             }
             val coach = response.response.firstOrNull()?.let {
                 CoachMapper.fromDto(it, teamId)

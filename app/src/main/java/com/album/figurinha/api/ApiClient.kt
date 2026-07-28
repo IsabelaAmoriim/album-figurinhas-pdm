@@ -39,6 +39,16 @@ object ApiClient {
             .create(FootballApi::class.java)
     }
     
-    // Create a specialized client for Coil to use the same User-Agent
-    fun getCoilClient(): OkHttpClient = client
+    // Create a specialized client for Coil to use the same User-Agent and API key
+    fun getCoilClient(): OkHttpClient = OkHttpClient.Builder()
+        .addInterceptor(userAgentInterceptor)
+        .addInterceptor(Interceptor { chain ->
+            val request = chain.request().newBuilder()
+                .header("x-apisports-key", "91903e3ddef0863948844da8643d20c9")
+                .build()
+            chain.proceed(request)
+        })
+        .connectTimeout(30, TimeUnit.SECONDS)
+        .readTimeout(30, TimeUnit.SECONDS)
+        .build()
 }

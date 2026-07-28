@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.album.figurinha.model.PlayerDetails
 import com.album.figurinha.ui.theme.*
+import com.album.figurinha.util.StickerImageResolver
 import com.album.figurinha.viewmodel.DataViewModel
 
 @Composable
@@ -62,8 +63,11 @@ fun PlayerDetailScreen(
                 .background(teamColor)
         ) {
             if (player.photo.isNotEmpty()) {
+                val playerImageUrl = StickerImageResolver.getPlayerImageUrl(
+                    player.id, player.photo
+                )
                 AsyncImage(
-                    model = player.photo,
+                    model = playerImageUrl,
                     contentDescription = null,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop

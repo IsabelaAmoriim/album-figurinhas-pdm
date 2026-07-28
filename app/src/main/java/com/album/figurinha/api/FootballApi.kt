@@ -26,13 +26,15 @@ interface FootballApi {
     @GET("coachs")
     suspend fun getCoach(
         @Header("x-apisports-key") apiKey: String,
-        @Query("team") team: Int
+        @Query("team") team: Int,
+        @Query("season") season: Int
     ): CoachResponseDto
 
     @GET("players")
     suspend fun getPlayersByTeamAndPage(
         @Header("x-apisports-key") apiKey: String,
         @Query("team") team: Int,
+        @Query("league") league: Int,
         @Query("season") season: Int,
         @Query("page") page: Int
     ): PlayerResponseDto

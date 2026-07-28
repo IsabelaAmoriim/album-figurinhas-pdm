@@ -33,27 +33,37 @@ object StickerImageResolver {
     )
 
     fun getPlayerImageUrl(playerId: Int, originalUrl: String): String {
-        if (originalUrl.isNotEmpty() && !originalUrl.contains("sofifa")) {
-            return originalUrl
+        val url = if (originalUrl.startsWith("http://")) {
+            originalUrl.replace("http://", "https://")
+        } else {
+            originalUrl
+        }
+        if (url.isNotEmpty() && !url.contains("sofifa")) {
+            return url
         }
         val soFifaId = playerToSoFifaMap[playerId]
         return if (soFifaId != null) {
             val paddedId = soFifaId.padStart(6, '0')
             "https://cdn.sofifa.net/players/${paddedId.take(3)}/${paddedId.takeLast(3)}/24_120.png"
         } else {
-            originalUrl
+            url
         }
     }
 
     fun getTeamShieldUrl(teamId: Int, originalUrl: String): String {
-        if (originalUrl.isNotEmpty() && !originalUrl.contains("sofifa")) {
-            return originalUrl
+        val url = if (originalUrl.startsWith("http://")) {
+            originalUrl.replace("http://", "https://")
+        } else {
+            originalUrl
+        }
+        if (url.isNotEmpty() && !url.contains("sofifa")) {
+            return url
         }
         val soFifaTeamId = teamToSoFifaMap[teamId]
         return if (soFifaTeamId != null) {
             "https://cdn.sofifa.net/teams/$soFifaTeamId/120.png"
         } else {
-            originalUrl
+            url
         }
     }
 
